@@ -1,19 +1,40 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>WebAssignment</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+<html lang="en">
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebAssignment</title>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
-      <%= yield %>
-    </main>
-  </body>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <!-- Link to application.css (using Sprockets or CSS Bundling) -->
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+  <!-- Link to JavaScript (using Importmap or Webpacker) -->
+  <%= javascript_importmap_tags %>
+</head>
+
+<body>
+  <div class="flash-messages">
+    <!-- Display flash messages for notices and alerts -->
+    <% if notice %>
+    <div class="alert alert-success">
+      <%= notice %>
+    </div>
+    <% end %>
+    <% if alert %>
+    <div class="alert alert-danger">
+      <%= alert %>
+    </div>
+    <% end %>
+  </div>
+
+  <main class="container mx-auto mt-28 px-5 flex">
+    <%= yield %>
+    <!-- This is where your page content will render -->
+  </main>
+</body>
+
 </html>

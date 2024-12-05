@@ -1,0 +1,10 @@
+<h1><%= @group.name %></h1>
+<p><%= @group.description %></p>
+
+<h2>Messages:</h2>
+<% @messages.each do |message| %>
+<div>
+  <p><%= message.message_content %></p>
+  <small>Posted by: <%= message.posted_by %> at <%= message.created_at %></small>
+</div>
+<% end %>

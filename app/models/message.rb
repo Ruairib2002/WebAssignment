@@ -1,4 +1,7 @@
 class Message < ApplicationRecord
-  belongs_to :user, foreign_key: 'posted_by'
   belongs_to :group
+  belongs_to :user
+  has_many_attached :files
+
+  validates :message_content, presence: true
 end
