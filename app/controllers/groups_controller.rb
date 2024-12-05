@@ -1,5 +1,6 @@
 class GroupsController < ApplicationController
   before_action :authenticate_user!
+  before_action :check_teacher_role, only: [:add_student, :remove_student, :upload_file]
 
   def index
     @groups = current_user.groups
@@ -8,7 +9,7 @@ class GroupsController < ApplicationController
   def show
     @group = Group.find(params[:id])
     @messages = @group.messages.order(created_at: :desc)
-    @students = User.where(role: 'student') # List of all students
+    @students = User.where(role: 'student')
   end
 
   def new
@@ -18,18 +19,22 @@ class GroupsController < ApplicationController
   def create
     @group = current_user.groups.build(group_params)
     if @group.save
-      UserGroup.create(user: current_user, group: @group) # Add current_user to the group
-      redirect_to @group, notice: "Group created successfully."
+      UserGroup.create(user: current_user, group: @group)
+      redirect_to groups_path, notice: "Group created successfully."
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
   def add_student
     group = Group.find(params[:group_id])
     student = User.find(params[:student_id])
-    group.users << student unless group.users.include?(student)
-    redirect_to group, notice: "Student added successfully."
+    unless group.users.include?(student)
+      group.users << student
+      redirect_to group, notice: "Student added successfully."
+    else
+      redirect_to group, alert: "Student is already in the group."
+    end
   end
 
   def remove_student
@@ -37,6 +42,16 @@ class GroupsController < ApplicationController
     student = User.find(params[:student_id])
     group.users.delete(student)
     redirect_to group, notice: "Student removed successfully."
+  end
+
+  def upload_file
+    @group = Group.find(params[:group_id])
+    if params[:file].present?
+      @group.files.attach(params[:file])
+      redirect_to @group, notice: "File uploaded successfully."
+    else
+      redirect_to @group, alert: "Please select a file to upload."
+    end
   end
 
   def search
@@ -50,6 +65,10 @@ class GroupsController < ApplicationController
   private
 
   def group_params
-    params.require(:group).permit(:name, :description)
+    params.require(:group).permit(:name, :description, files: [])
+  end
+
+  def check_teacher_role
+    redirect_to root_path, alert: "You do not have permission to perform this action." unless current_user.role.role_name == "teacher"
   end
 end

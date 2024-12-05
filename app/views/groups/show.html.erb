@@ -26,7 +26,22 @@
   </select>
   <button type="submit" class="btn btn-primary">Add</button>
 </form>
+
+<h3>Upload a File</h3>
+<%= form_with url: upload_file_group_path(@group), method: :post, multipart: true do |form| %>
+<%= form.file_field :file %>
+<%= form.submit "Upload File" %>
 <% end %>
+<% end %>
+
+<h2>Uploaded Files:</h2>
+<ul>
+  <% @group.files.each do |file| %>
+  <li>
+    <%= link_to file.filename.to_s, url_for(file), target: "_blank" %>
+  </li>
+  <% end %>
+</ul>
 
 <h2>Messages:</h2>
 <% @messages.each do |message| %>

@@ -9,15 +9,11 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
-  <!-- Link to application.css (using Sprockets or CSS Bundling) -->
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-
-  <!-- Link to JavaScript (using Importmap or Webpacker) -->
   <%= javascript_importmap_tags %>
 </head>
 
 <body>
-  <!-- Flash messages for notices and alerts -->
   <div class="flash-messages">
     <% if notice %>
     <div class="alert alert-success">
@@ -31,13 +27,10 @@
     <% end %>
   </div>
 
-  <!-- Sidebar Navigation -->
   <%= render 'layouts/sidebar' %>
 
-  <!-- Main content area -->
   <main class="container mx-auto mt-28 px-5 flex">
     <%= yield %>
-    <!-- This is where your page content will render -->
   </main>
 </body>
 
