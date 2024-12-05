@@ -7,5 +7,7 @@ class File < ApplicationRecord
 
   validates :file_name, presence: true
   validates :file_path, presence: true
+  belongs_to :group
+  has_one_attached :file_attachment
 
 end
