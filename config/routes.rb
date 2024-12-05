@@ -1,19 +1,29 @@
 Rails.application.routes.draw do
-  get 'home/index'
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Health check endpoint for uptime monitoring
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # Root path (home page)
   root to: 'home#index'
 
-
-  resources :groups do
-    resources :messages, only: [:create]
-  end
-
+  # Devise routes for user authentication (login, registration, etc.)
   devise_for :users
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  # Dashboard route (You can adjust the controller name and action if needed)
+  get 'dashboard', to: 'dashboard#index', as: 'dashboard'
+
+  # Profile route for the current user (assuming you have a UsersController with a show action)
+  get 'profile', to: 'users#show', as: 'profile'
+
+  resources :groups do
+    resources :messages, only: [:index, :create]
+  end
+
+
+  # Routes for Groups (resources handle CRUD operations for groups)
+  resources :groups do
+    # Nested resources for Messages under a group
+    resources :messages, only: [:create, :index]
+  end
+
+  # You can add other necessary routes for any other features in your app.
 end

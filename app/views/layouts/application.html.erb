@@ -17,8 +17,8 @@
 </head>
 
 <body>
+  <!-- Flash messages for notices and alerts -->
   <div class="flash-messages">
-    <!-- Display flash messages for notices and alerts -->
     <% if notice %>
     <div class="alert alert-success">
       <%= notice %>
@@ -31,6 +31,10 @@
     <% end %>
   </div>
 
+  <!-- Navigation Bar -->
+  <%= render 'layouts/navbar' %>
+
+  <!-- Main content area -->
   <main class="container mx-auto mt-28 px-5 flex">
     <%= yield %>
     <!-- This is where your page content will render -->
