@@ -10,7 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_12_05_135753) do
+ActiveRecord::Schema[7.1].define(version: 2024_12_05_141855) do
+  create_table "files", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "file_name"
+    t.bigint "uploaded_by"
+    t.string "file_path"
+    t.timestamp "uploaded_at", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uploaded_by"], name: "fk_rails_1204311ac4"
+  end
+
   create_table "groups", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -54,4 +64,5 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_05_135753) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "files", "users", column: "uploaded_by"
 end
