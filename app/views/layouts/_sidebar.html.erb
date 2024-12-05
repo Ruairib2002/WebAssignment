@@ -23,6 +23,11 @@
   <li><%= link_to 'Admin Panel', admin_panel_path %></li>
   <% end %>
 
-  <li><%= link_to 'Logout', destroy_user_session_path, method: :delete, class: 'logout-btn' %></li>
+  <!-- Logout form -->
+  <li>
+    <%= form_for(:user, url: destroy_user_session_path, method: :delete, html: { class: 'logout-form' }) do |f| %>
+    <%= f.submit 'Logout', class: 'logout-btn', data: { turbo: false } %>
+    <% end %>
+  </li>
   <% end %>
 </ul>
