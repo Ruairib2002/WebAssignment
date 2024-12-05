@@ -1,5 +1,6 @@
 <ul class="sidebar">
   <li><%= link_to 'Home', root_path %></li>
+
   <% if user_signed_in? %>
   <li><%= link_to 'Dashboard', dashboard_path %></li>
   <li><%= link_to 'Profile', profile_path(current_user) %></li>
@@ -16,6 +17,7 @@
   <li><%= link_to 'Admin Panel', admin_panel_path %></li>
   <% end %>
 
+  <li><%= link_to 'Search', search_path %></li>
   <li><%= link_to 'Logout', destroy_user_session_path, method: :delete, class: 'logout-btn' %></li>
   <% end %>
 </ul>

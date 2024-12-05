@@ -1,0 +1,20 @@
+<h1>Search</h1>
+
+<%= form_with url: search_path, method: :get, local: true do |form| %>
+<%= form.text_field :query, placeholder: "Search for students or groups..." %>
+<%= form.submit "Search" %>
+<% end %>
+
+<% if @students.present? || @groups.present? %>
+<h2>Students</h2>
+<% @students.each do |student| %>
+<div><%= student.full_name %></div>
+<% end %>
+
+<h2>Groups</h2>
+<% @groups.each do |group| %>
+<div><%= group.name %></div>
+<% end %>
+<% else %>
+<p>No results found.</p>
+<% end %>
