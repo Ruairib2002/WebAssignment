@@ -1,0 +1,7 @@
+<h1>Messages in <%= @group.name %></h1>
+<%= link_to 'New Message', new_group_message_path(@group) %>
+<ul>
+  <% @messages.each do |message| %>
+  <li><%= message.content %> - <%= message.created_at %></li>
+  <% end %>
+</ul>

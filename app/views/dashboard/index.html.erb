@@ -1,0 +1,8 @@
+<h1>Welcome, <%= current_user.full_name %></h1>
+<p>Your Role: <%= current_user.role.role_name %></p>
+<h3>Your Groups:</h3>
+<ul>
+  <% @groups.each do |group| %>
+  <li><%= link_to group.name, group_path(group) %></li>
+  <% end %>
+</ul>

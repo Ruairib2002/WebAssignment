@@ -1,0 +1,6 @@
+<h1>Upload a File to <%= @group.name %></h1>
+<%= form_for([@group, @file]) do |f| %>
+<%= f.label :file %>
+<%= f.file_field :file %>
+<%= f.submit 'Upload File' %>
+<% end %>
