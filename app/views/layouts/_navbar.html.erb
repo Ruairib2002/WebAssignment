@@ -6,16 +6,16 @@
   <li><%= link_to 'My Groups', groups_path %></li>
 
   <% if current_user.groups.any? %>
-  <li><%= link_to 'Messages', group_messages_path(current_user.groups.first) %></li>
+  <li><%= link_to 'Messages', group_messages_path(group_id: current_user.groups.first.id) %></li>
   <% else %>
   <li>No Groups Available</li>
   <% end %>
 
   <% if current_user.role.role_name == "teacher" %>
-  <li><%= link_to 'Create New Group', new_group_path, class: 'btn btn-primary' %></li>
-  <li><%= link_to 'Admin Panel', admin_panel_path, class: 'btn btn-secondary' %></li>
+  <li><%= link_to 'Create New Group', new_group_path %></li>
+  <li><%= link_to 'Admin Panel', admin_panel_path %></li>
   <% end %>
 
-  <li><%= link_to 'Logout', destroy_user_session_path, method: :delete, class: 'logout-btn btn btn-danger' %></li>
+  <li><%= link_to 'Logout', destroy_user_session_path, method: :delete, class: 'logout-btn' %></li>
   <% end %>
 </ul>
