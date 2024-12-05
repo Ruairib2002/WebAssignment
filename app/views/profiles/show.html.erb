@@ -1,4 +1,3 @@
-<h1>Your Profile</h1>
-<p>Name: <%= current_user.full_name %></p>
-<p>Email: <%= current_user.email %></p>
-<%= link_to 'Edit Profile', edit_profile_path %>
+<h1>Profile of <%= @user.full_name %></h1>
+<p>Email: <%= @user.email %></p>
+<p>Joined on: <%= @user.created_at.to_date %></p>

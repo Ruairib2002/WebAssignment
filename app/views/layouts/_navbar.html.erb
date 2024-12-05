@@ -2,13 +2,13 @@
   <li><%= link_to 'Home', root_path %></li>
   <% if user_signed_in? %>
   <li><%= link_to 'Dashboard', dashboard_path %></li>
-  <li><%= link_to 'Profile', profile_path(current_user) %></li>
+  <li><%= link_to 'Profile', profile_path(current_user.id) %></li>
   <li><%= link_to 'My Groups', groups_path %></li>
 
   <% if current_user.groups.any? %>
   <li><%= link_to 'Messages', group_messages_path(current_user.groups.first) %></li>
   <% else %>
-  <li>No Groups Available</li> <!-- Or a link to create/join a group -->
+  <li>No Groups Available</li>
   <% end %>
 
   <% if current_user.role.role_name == "teacher" %>
