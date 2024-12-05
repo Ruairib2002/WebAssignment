@@ -28,6 +28,7 @@ gem "jbuilder"
 
 gem 'mysql2', '>= 0.5.0'
 
+gem 'devise'
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 
