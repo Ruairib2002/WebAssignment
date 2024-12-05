@@ -1,18 +1,57 @@
-/*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
- * vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
- *= require_tree .
- *= require_self
- */
+/* Sidebar Navigation (initially hidden off-screen) */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -200px; /* Initially hidden */
+  width: 200px;
+  height: 100vh;
+  background-color: #333;
+  color: white;
+  padding-top: 20px;
+  list-style-type: none;
+  margin: 0;
+  transition: left 0.3s ease; /* Smooth transition for sliding effect */
+}
+
+.sidebar:hover {
+  left: 0; /* Show the sidebar when hovering */
+}
+
+.sidebar li {
+  padding: 10px;
+  text-align: left;
+}
+
+.sidebar li a {
+  color: white;
+  text-decoration: none;
+  display: block;
+}
+
+.sidebar li:hover {
+  background-color: #575757;
+}
+
+.logout-btn {
+  color: red;
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  background-color: #444;
+}
+
+/* Sidebar trigger area (on the left side of the page) */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px; /* This is the area the user will hover over to trigger the sidebar */
+  height: 100vh;
+  background-color: transparent;
+  z-index: 999;
+}
 
 /* Navigation bar styles */
 nav {

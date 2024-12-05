@@ -4,10 +4,12 @@ class ProfilesController < ApplicationController
   end
 
   def edit
+    @user = current_user
   end
 
   def update
-    if current_user.update(profile_params)
+    @user = current_user
+    if @user.update(profile_params)
       redirect_to profile_path, notice: 'Profile updated successfully.'
     else
       render :edit
