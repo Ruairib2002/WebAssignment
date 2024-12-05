@@ -1,7 +1,12 @@
-<h1>Messages in <%= @group.name %></h1>
-<%= link_to 'New Message', new_group_message_path(@group) %>
+<h2>Messages</h2>
+<% if @messages.any? %>
 <ul>
   <% @messages.each do |message| %>
-  <li><%= message.content %> - <%= message.created_at %></li>
+  <li><%= message.content %></li>
   <% end %>
 </ul>
+<% else %>
+<p>No messages available.</p>
+<% end %>
+
+<%= link_to 'Send New Message', new_group_message_path(@group), class: 'btn btn-primary' %>

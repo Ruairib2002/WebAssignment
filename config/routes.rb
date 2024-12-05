@@ -5,8 +5,6 @@ Rails.application.routes.draw do
   devise_for :users
 
   get 'dashboard', to: 'dashboard#index', as: 'dashboard'
-
-  # Profile routes
   get 'profile', to: 'profiles#show', as: 'profile'
   get 'profile/edit', to: 'profiles#edit', as: 'edit_profile'
   patch 'profile', to: 'profiles#update'

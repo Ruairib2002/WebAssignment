@@ -1,8 +1,13 @@
-<h1>Welcome, <%= current_user.full_name %></h1>
-<p>Your Role: <%= current_user.role.role_name %></p>
-<h3>Your Groups:</h3>
+<h2>Welcome to Your Dashboard</h2>
+
+<% if current_user.groups.any? %>
+<p>You are part of the following groups:</p>
 <ul>
-  <% @groups.each do |group| %>
-  <li><%= link_to group.name, group_path(group) %></li>
+  <% current_user.groups.each do |group| %>
+  <li><%= group.name %></li>
   <% end %>
 </ul>
+<%= link_to 'View All Groups', groups_path, class: 'btn btn-primary' %>
+<% else %>
+<p>You are not a member of any groups. <%= link_to 'Join or Create a Group', new_group_path %></p>
+<% end %>

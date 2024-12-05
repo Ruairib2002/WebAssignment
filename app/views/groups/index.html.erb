@@ -1,8 +1,12 @@
-<h1>Your Groups</h1>
+<% if user_signed_in? %>
+<h2>Your Groups</h2>
+<ul>
+  <% @groups.each do |group| %>
+  <li><%= link_to group.name, group_path(group) %></li>
+  <% end %>
+</ul>
 
-<% @groups.each do |group| %>
-<div>
-  <h2><%= link_to group.name, group_path(group) %></h2>
-  <p><%= group.description %></p>
-</div>
+<%= link_to 'Create New Group', new_group_path, class: 'btn btn-primary' %>
+<% else %>
+<p>Please sign in to view your groups.</p>
 <% end %>
