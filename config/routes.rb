@@ -14,14 +14,12 @@ Rails.application.routes.draw do
   resources :groups do
     resources :messages, only: [:index, :create]
 
-    # Member routes for actions like adding and removing students
     member do
       post 'add_student'
       delete 'remove_student'
-      post 'upload_file'  # Add this for file upload functionality
+      post 'upload_file'
     end
 
-    # Collection routes for searching groups
     collection do
       get 'search'
     end

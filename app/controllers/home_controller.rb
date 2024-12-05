@@ -1,9 +1,7 @@
 class HomeController < ApplicationController
-  # Enforce authentication for the HomeController
-  before_action :authenticate_user!  # Ensures the user is authenticated before accessing any actions in this controller
+  before_action :authenticate_user!
 
-  # The index action that will render the home page
   def index
-    # Any logic you want to run when accessing the home page can go here
+    @assignments = current_user.groups.joins(:assignments).where("assignments.due_date >= ?", Time.current).distinct
   end
 end
