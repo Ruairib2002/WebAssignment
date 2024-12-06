@@ -1,14 +1,19 @@
 class MessagesController < ApplicationController
   before_action :authenticate_user!
 
+  def new
+    @recipient = User.find(params[:user_id])
+    @message = Message.new
+  end
+
   def create
-    @group = Group.find(params[:group_id])
-    @message = @group.messages.new(message_params.merge(user_id: current_user.id))
+    @recipient = User.find(params[:user_id])
+    @message = Message.new(message_params.merge(user_id: current_user.id, recipient_id: @recipient.id))
 
     if @message.save
-      redirect_to group_path(@group)
+      redirect_to profile_path(@recipient), notice: 'Message sent successfully.'
     else
-      render 'groups/show'
+      redirect_to profile_path(@recipient), alert: 'Failed to send message.'
     end
   end
 

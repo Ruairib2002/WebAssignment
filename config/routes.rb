@@ -25,4 +25,6 @@ Rails.application.routes.draw do
       get 'search'
     end
   end
+
+  resources :messages, only: [:new, :create]
 end
