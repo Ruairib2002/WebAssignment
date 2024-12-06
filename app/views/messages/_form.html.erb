@@ -1,13 +1,20 @@
-<%= form_with(model: @message, url: messages_path, method: :post, local: true) do |form| %>
-<div class="mb-4">
-  <%= form.label :message_content, "Message Content" %>
-  <%= form.text_area :message_content, class: "w-full p-2 border border-gray-300 rounded-md", rows: 4 %>
+<h1>Create a New Message</h1>
+
+<%= form_with model: @message, local: true do |form| %>
+<div class="form-group">
+  <%= form.label :message_content %>
+  <%= form.text_area :message_content, class: 'form-control' %>
 </div>
 
-<div class="mb-4">
-  <%= form.label :group_id, "Select Group" %>
-  <%= form.collection_select :group_id, current_user.groups, :id, :name, { include_blank: true }, { class: 'w-full p-2 border border-gray-300 rounded-md' } %>
+<div class="form-group">
+  <%= form.label :group_id, 'Select Group' %>
+  <%= form.collection_select :group_id, current_user.groups, :id, :name, { prompt: 'Choose a group' }, class: 'form-control' %>
 </div>
 
-<%= form.submit "Send Message", class: "btn btn-primary" %>
+<div class="form-group">
+  <%= form.label :recipient_id, 'Select Recipient' %>
+  <%= form.collection_select :recipient_id, User.where(role_id: Role.find_by(role_name: 'student').id), :id, :full_name, { prompt: 'Choose a recipient' }, class: 'form-control' %>
+</div>
+
+<%= form.submit 'Send Message', class: 'btn btn-primary' %>
 <% end %>
