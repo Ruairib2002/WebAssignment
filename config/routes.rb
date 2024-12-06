@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   get 'profile/edit', to: 'profiles#edit', as: 'edit_profile'
   patch 'profile', to: 'profiles#update'
   put 'profile', to: 'profiles#update'
+  get 'search', to: 'profiles#search', as: 'search'
 
   resources :groups do
     resources :messages, only: [:index, :create]
@@ -24,6 +25,4 @@ Rails.application.routes.draw do
       get 'search'
     end
   end
-
-  get 'search', to: 'search#index', as: 'search'
 end

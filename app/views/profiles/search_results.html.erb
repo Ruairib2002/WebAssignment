@@ -1,13 +1,19 @@
 <h1>Search Results</h1>
 
+<%= form_with url: search_path, method: :get, local: true do %>
+<div class="form-group">
+  <%= label_tag :query, "Search by Name or ID" %>
+  <%= text_field_tag :query, params[:query], class: 'form-control' %>
+</div>
+<%= submit_tag "Search", class: "btn btn-primary" %>
+<% end %>
+
 <% if @users.any? %>
 <ul>
   <% @users.each do |user| %>
-  <li>
-    <strong><%= user.full_name %></strong> (<%= user.email %>)
-  </li>
+  <li><%= link_to user.full_name, profile_path(user) %> - <%= user.email %></li>
   <% end %>
 </ul>
 <% else %>
-<p>No users found.</p>
+<p>No profiles found.</p>
 <% end %>
