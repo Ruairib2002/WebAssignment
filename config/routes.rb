@@ -13,14 +13,12 @@ Rails.application.routes.draw do
   get 'search', to: 'profiles#search', as: 'search'
 
   resources :groups do
-    resources :messages, only: [:index, :create]
-
+    resources :messages, only: [:index, :create, :new]  # Added :new route here
     member do
       post 'add_student'
       delete 'remove_student'
       post 'upload_file'
     end
-
     collection do
       get 'search'
     end

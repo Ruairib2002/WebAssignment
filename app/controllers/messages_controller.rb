@@ -2,8 +2,9 @@ class MessagesController < ApplicationController
   before_action :authenticate_user!
 
   def index
-    @received_messages = Message.where(group_id: current_user.groups.pluck(:id))
-    @sent_messages = Message.where(posted_by: current_user.id)
+    @group = Group.find_by(id: params[:group_id])  # Assuming you're working within a specific group
+    @sent_messages = Message.where(posted_by: current_user.id, group_id: @group&.id)
+    @received_messages = Message.where(recipient_id: current_user.id, group_id: @group&.id)
   end
 
   def new
