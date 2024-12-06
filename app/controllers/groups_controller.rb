@@ -29,8 +29,9 @@ class GroupsController < ApplicationController
   end
 
   def add_student
-    group = Group.find(params[:group_id])
+    group = Group.find(params[:id])  # Fix here: Use params[:id] instead of params[:group_id]
     student = User.find(params[:student_id])
+
     unless group.users.include?(student)
       group.users << student
       redirect_to group, notice: "Student added successfully."
@@ -40,14 +41,14 @@ class GroupsController < ApplicationController
   end
 
   def remove_student
-    group = Group.find(params[:group_id])
+    group = Group.find(params[:id])  # Fix here: Use params[:id] instead of params[:group_id]
     student = User.find(params[:student_id])
     group.users.delete(student)
     redirect_to group, notice: "Student removed successfully."
   end
 
   def upload_file
-    @group = Group.find(params[:group_id])
+    @group = Group.find(params[:id])  # Fix here: Use params[:id] instead of params[:group_id]
     if params[:file].present?
       @group.files.attach(params[:file])
       redirect_to @group, notice: "File uploaded successfully."
