@@ -31,6 +31,11 @@
 </div>
 
 <div class="form-group">
+  <%= f.label :role, "Select your role" %>
+  <%= f.select :role_id, Role.all.collect { |role| [role.role_name.titleize, role.id] }, prompt: 'Choose your role', class: "form-control" %>
+</div>
+
+<div class="form-group">
   <%= f.submit "Sign up", class: "btn btn-primary" %>
 </div>
 <% end %>
