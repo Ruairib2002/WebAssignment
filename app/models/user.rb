@@ -1,7 +1,9 @@
 class User < ApplicationRecord
   belongs_to :role, class_name: 'Role', foreign_key: 'role_id'
 
-  has_many :messages
+  has_many :sent_messages, class_name: 'Message', foreign_key: 'user_id'
+  has_many :received_messages, class_name: 'Message', foreign_key: 'recipient_id'
+
   has_many :user_groups
   has_many :groups, through: :user_groups
 

@@ -1,7 +1,6 @@
 <h1 class="text-4xl text-blue-600 font-semibold">Welcome to Your Dashboard, <%= current_user.full_name %>!</h1>
 <p class="text-lg text-gray-700 mt-4">You are logged in as a <%= current_user.role.role_name.capitalize %>.</p>
 
-<%# Display a message for teachers or students based on their role %>
 <% if current_user.role.role_name == 'teacher' %>
 <div class="mt-8 p-4 bg-yellow-100 border-l-4 border-yellow-500">
   <h3 class="text-xl text-yellow-600 font-bold">Teacher Dashboard</h3>
@@ -32,11 +31,30 @@
 <p class="text-gray-700 mt-4">It looks like you're not part of any groups yet. You can <%= link_to 'create a new group', new_group_path, class: 'text-blue-500 hover:text-blue-700' %> or wait for an invitation.</p>
 <% end %>
 
-<%# If the user is a teacher, display a special message for them %>
-<% if current_user.role.role_name == 'teacher' %>
-<div class="mt-8 p-4 bg-gray-100 border-l-4 border-gray-500">
-  <h3 class="text-xl text-gray-600 font-bold">Manage Group Activities</h3>
-  <p class="text-gray-700">You can create new groups, add or remove students from groups, and monitor group activities.</p>
-  <%= link_to 'Create New Group', new_group_path, class: 'btn btn-primary mt-4' %>
-</div>
+<h2 class="text-2xl text-purple-600 font-semibold mt-8">Your Messages</h2>
+
+<% if @sent_messages.any? %>
+<ul class="space-y-4 mt-4">
+  <% @sent_messages.each do |message| %>
+  <li class="bg-white p-4 shadow-md rounded-md">
+    <h3 class="text-xl text-gray-800 font-bold">Sent to: <%= message.recipient&.full_name || 'N/A' %></h3>
+    <p class="text-gray-600"><%= message.message_content %></p>
+  </li>
+  <% end %>
+</ul>
+<% else %>
+<p class="text-gray-700 mt-4">You have no sent messages.</p>
+<% end %>
+
+<% if @received_messages.any? %>
+<ul class="space-y-4 mt-4">
+  <% @received_messages.each do |message| %>
+  <li class="bg-white p-4 shadow-md rounded-md">
+    <h3 class="text-xl text-gray-800 font-bold">From: <%= message.user.full_name %></h3>
+    <p class="text-gray-600"><%= message.message_content %></p>
+  </li>
+  <% end %>
+</ul>
+<% else %>
+<p class="text-gray-700 mt-4">You have no received messages.</p>
 <% end %>

@@ -1,5 +1,13 @@
-<%= form_for(@message) do |f| %>
-<%= f.label :message_content, "Message" %>
-<%= f.text_area :message_content %>
-<%= f.submit 'Send Message', class: 'btn btn-primary' %>
+<%= form_with(model: @message, url: messages_path, method: :post, local: true) do |form| %>
+<div class="mb-4">
+  <%= form.label :message_content, "Message Content" %>
+  <%= form.text_area :message_content, class: "w-full p-2 border border-gray-300 rounded-md", rows: 4 %>
+</div>
+
+<div class="mb-4">
+  <%= form.label :group_id, "Select Group" %>
+  <%= form.collection_select :group_id, current_user.groups, :id, :name, { include_blank: true }, { class: 'w-full p-2 border border-gray-300 rounded-md' } %>
+</div>
+
+<%= form.submit "Send Message", class: "btn btn-primary" %>
 <% end %>

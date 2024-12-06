@@ -21,6 +21,9 @@
 
   <% if current_user.role.role_name == "teacher" %>
   <li><%= link_to 'Create New Group', new_group_path %></li>
+  <% end %>
+
+  <% if current_user.role.role_name == "admin" %>
   <li><%= link_to 'Admin Panel', admin_panel_path %></li>
   <% end %>
 

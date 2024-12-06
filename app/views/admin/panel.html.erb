@@ -1,0 +1,23 @@
+<h1>Admin Panel</h1>
+
+<p>Welcome to the Admin Panel. You can manage various parts of the application here.</p>
+
+<div>
+  <h3>Total Users</h3>
+  <p><%= User.count %></p>
+
+  <h3>Total Groups</h3>
+  <p><%= Group.count %></p>
+
+  <h3>Total Messages</h3>
+  <p><%= Message.count %></p>
+</div>
+
+<div>
+  <h3>Admin Management</h3>
+  <ul>
+    <!-- Links to manage users and groups in the admin panel -->
+    <li><%= link_to 'Manage Users', admin_users_path %></li>
+    <li><%= link_to 'Manage Groups', admin_groups_path %></li>
+  </ul>
+</div>

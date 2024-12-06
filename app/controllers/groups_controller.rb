@@ -18,6 +18,7 @@ class GroupsController < ApplicationController
 
   def create
     @group = current_user.groups.build(group_params)
+    @group.teacher_id = current_user.id # Automatically set the current user as the teacher (owner) of the group
     if @group.save
       UserGroup.create(user: current_user, group: @group)
       redirect_to groups_path, notice: "Group created successfully."

@@ -8,5 +8,8 @@ class DashboardController < ApplicationController
     else
       @groups = current_user.groups
     end
+
+    @sent_messages = Message.where(posted_by: current_user.id)
+    @received_messages = Message.where(recipient_id: current_user.id)
   end
 end
