@@ -1,14 +1,10 @@
 Rails.application.routes.draw do
-  # Health check route for the app
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Root route for the home page
   root to: 'home#index'
 
-  # Devise routes for user authentication
   devise_for :users
 
-  # Profile routes for users
   get 'dashboard', to: 'dashboard#index', as: 'dashboard'
   get 'profile', to: 'profiles#show', as: 'profile'
   get 'profile/edit', to: 'profiles#edit', as: 'edit_profile'
@@ -16,7 +12,6 @@ Rails.application.routes.draw do
   put 'profile', to: 'profiles#update'
   get 'search', to: 'profiles#search', as: 'search'
 
-  # Resources for groups and nested resources for messages
   resources :groups do
     resources :messages, only: [:index, :create]
 

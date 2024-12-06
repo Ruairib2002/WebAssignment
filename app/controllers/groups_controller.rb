@@ -9,7 +9,8 @@ class GroupsController < ApplicationController
   def show
     @group = Group.find(params[:id])
     @messages = @group.messages.order(created_at: :desc)
-    @students = User.where(role: 'student')
+    student_role = Role.find_by(role_name: 'student')
+    @students = User.where(role_id: student_role.id).where.not(id: @group.user_ids)
   end
 
   def new
@@ -18,7 +19,7 @@ class GroupsController < ApplicationController
 
   def create
     @group = current_user.groups.build(group_params)
-    @group.teacher_id = current_user.id # Automatically set the current user as the teacher (owner) of the group
+    @group.teacher_id = current_user.id
     if @group.save
       UserGroup.create(user: current_user, group: @group)
       redirect_to groups_path, notice: "Group created successfully."
