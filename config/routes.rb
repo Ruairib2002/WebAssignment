@@ -14,6 +14,9 @@ Rails.application.routes.draw do
 
   resources :groups do
     resources :messages, only: [:index, :create, :new]
+    resources :assignments, only: [] do
+      post 'assign_marks', on: :member
+    end
     member do
       post 'add_student'
       delete 'remove_student'

@@ -23,9 +23,24 @@ class AdminController < ApplicationController
   end
 
   def update_role
-    user = User.find(params[:id])
-    user.update(role_id: params[:role_id])
-    redirect_to admin_manage_roles_path, notice: "Role updated successfully."
+    user = User.find_by(id: params[:id])
+    role = Role.find_by(id: params[:user][:role_id])
+
+    if user.nil?
+      redirect_to admin_manage_roles_path, alert: "User not found."
+      return
+    end
+
+    if role.nil?
+      redirect_to admin_manage_roles_path, alert: "Invalid role selected."
+      return
+    end
+
+    if user.update(role_id: role.id)
+      redirect_to admin_manage_roles_path, notice: "Role updated successfully."
+    else
+      redirect_to admin_manage_roles_path, alert: "Failed to update role: #{user.errors.full_messages.join(', ')}."
+    end
   end
 
   def users_index

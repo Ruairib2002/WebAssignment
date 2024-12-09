@@ -6,10 +6,24 @@
   <% @group.users.each do |user| %>
   <li>
     <%= user.full_name %>
+
     <% if current_user.role.role_name == "teacher" %>
-    <%= form_with url: remove_student_group_path(@group, student_id: user.id), method: :delete, local: true do |form| %>
-    <%= form.submit 'Remove', class: 'btn btn-danger' %>
+    <!-- Form for assigning marks to a student -->
+    <%= form_with url: assign_marks_group_path(@group), method: :post, local: true do |form| %>
+    <%= form.hidden_field :student_id, value: user.id %>
+    <%= form.label :marks, "Assign Marks to #{user.full_name}" %>
+    <%= form.text_field :marks %>
+    <%= form.submit 'Assign Marks', class: 'btn btn-success' %>
     <% end %>
+
+    <ul>
+      <% @group.assignments.each do |assignment| %>
+      <li>
+        <%= assignment.title %>:
+        <%= assignment.marks_for_user(user.id) || "No marks assigned" %>
+      </li>
+      <% end %>
+    </ul>
     <% end %>
   </li>
   <% end %>
@@ -17,22 +31,15 @@
 
 <% if current_user.role.role_name == "teacher" %>
 <h3>Add Student to Group</h3>
-<form action="<%= add_student_group_path(@group) %>" method="post">
-  <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-  <select name="student_id">
-    <% @students.each do |student| %>
-    <% unless @group.users.include?(student) %>
-    <option value="<%= student.id %>"><%= student.full_name %></option>
-    <% end %>
-    <% end %>
-  </select>
-  <button type="submit" class="btn btn-primary">Add</button>
-</form>
+<%= form_with url: add_student_group_path(@group), method: :post, local: true do |form| %>
+<%= form.select :student_id, @students.map { |s| [s.full_name, s.id] }, prompt: "Select a student" %>
+<%= form.submit "Add Student", class: "btn btn-primary" %>
+<% end %>
 
 <h3>Upload a File</h3>
 <%= form_with url: upload_file_group_path(@group), method: :post, multipart: true do |form| %>
 <%= form.file_field :file %>
-<%= form.submit "Upload File" %>
+<%= form.submit "Upload File", class: "btn btn-success" %>
 <% end %>
 <% end %>
 

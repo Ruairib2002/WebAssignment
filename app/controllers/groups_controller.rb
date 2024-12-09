@@ -1,6 +1,6 @@
 class GroupsController < ApplicationController
   before_action :authenticate_user!
-  before_action :check_teacher_role, only: [:add_student, :remove_student, :upload_file]
+  before_action :check_teacher_role, only: [:add_student, :remove_student, :upload_file, :assign_marks]
 
   def index
     @groups = current_user.groups
@@ -11,6 +11,7 @@ class GroupsController < ApplicationController
     @messages = @group.messages.order(created_at: :desc)
     student_role = Role.find_by(role_name: 'student')
     @students = User.where(role_id: student_role.id).where.not(id: @group.user_ids)
+    @assignments = @group.assignments # Fetch assignments for the group
   end
 
   def new
@@ -29,7 +30,7 @@ class GroupsController < ApplicationController
   end
 
   def add_student
-    group = Group.find(params[:id])  # Fix here: Use params[:id] instead of params[:group_id]
+    group = Group.find(params[:id])
     student = User.find(params[:student_id])
 
     unless group.users.include?(student)
@@ -41,20 +42,34 @@ class GroupsController < ApplicationController
   end
 
   def remove_student
-    group = Group.find(params[:id])  # Fix here: Use params[:id] instead of params[:group_id]
+    group = Group.find(params[:id])
     student = User.find(params[:student_id])
     group.users.delete(student)
     redirect_to group, notice: "Student removed successfully."
   end
 
   def upload_file
-    @group = Group.find(params[:id])  # Fix here: Use params[:id] instead of params[:group_id]
+    @group = Group.find(params[:id])
     if params[:file].present?
       @group.files.attach(params[:file])
       redirect_to @group, notice: "File uploaded successfully."
     else
       redirect_to @group, alert: "Please select a file to upload."
     end
+  end
+
+  # New action to assign marks to students' submissions
+  def assign_marks
+    @group = Group.find(params[:id])
+    student = User.find(params[:student_id]) # Find the student to assign marks to
+    mark = params[:marks].to_f # Get the mark from the form
+
+    assignment = Assignment.find(params[:assignment_id]) # Find the specific assignment
+    submission = Submission.find_or_create_by(assignment: assignment, user: student) # Create or find the student's submission
+
+    submission.assign_marks(student.id, mark) # Assign the mark
+
+    redirect_to @group, notice: "Marks assigned successfully to #{student.full_name}."
   end
 
   def search
