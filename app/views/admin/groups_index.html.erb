@@ -1,0 +1,22 @@
+<h1>Manage Groups</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Members</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @groups.each do |group| %>
+    <tr>
+      <td><%= group.name %></td>
+      <td><%= group.users.count %></td>
+      <td>
+        <%= link_to 'Edit', edit_admin_group_path(group), class: "btn btn-primary" %>
+      </td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>

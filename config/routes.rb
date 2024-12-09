@@ -32,6 +32,14 @@ Rails.application.routes.draw do
   get 'admin/manage_roles', to: 'admin#manage_roles', as: 'admin_manage_roles'
   patch 'admin/update_role/:id', to: 'admin#update_role', as: 'admin_update_role'
 
+  get 'admin/users', to: 'admin#users_index', as: 'admin_users'
+  get 'admin/users/:id/edit', to: 'admin#edit_user', as: 'edit_admin_user'
+  patch 'admin/users/:id', to: 'admin#update_user', as: 'update_admin_user'
+
+  get 'admin/groups', to: 'admin#groups_index', as: 'admin_groups'
+  get 'admin/groups/:id/edit', to: 'admin#edit_group', as: 'edit_admin_group'
+  patch 'admin/groups/:id', to: 'admin#update_group', as: 'update_admin_group'
+
   namespace :admin do
     resources :users, only: [:index, :show, :edit, :update, :destroy]
     resources :groups, only: [:index, :show, :edit, :update, :destroy]

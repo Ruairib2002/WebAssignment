@@ -28,11 +28,53 @@ class AdminController < ApplicationController
     redirect_to admin_manage_roles_path, notice: "Role updated successfully."
   end
 
+  def users_index
+    @users = User.all
+  end
+
+  def edit_user
+    @user = User.find(params[:id])
+  end
+
+  def update_user
+    @user = User.find(params[:id])
+    if @user.update(user_params)
+      redirect_to admin_users_path, notice: "User updated successfully."
+    else
+      render :edit_user
+    end
+  end
+
+  def groups_index
+    @groups = Group.all
+  end
+
+  def edit_group
+    @group = Group.find(params[:id])
+  end
+
+  def update_group
+    @group = Group.find(params[:id])
+    if @group.update(group_params)
+      redirect_to admin_groups_path, notice: "Group updated successfully."
+    else
+      render :edit_group
+    end
+  end
+
   private
 
   def verify_admin_password
     unless session[:admin_authenticated]
       redirect_to new_admin_password_path
     end
+  end
+
+  def user_params
+    params.require(:user).permit(:full_name, :email, :password, :password_confirmation, :role_id)
+  end
+
+  def group_params
+    params.require(:group).permit(:name, user_ids: [])
   end
 end
