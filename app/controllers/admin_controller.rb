@@ -18,6 +18,16 @@ class AdminController < ApplicationController
     end
   end
 
+  def manage_roles
+    @users = User.all
+  end
+
+  def update_role
+    user = User.find(params[:id])
+    user.update(role_id: params[:role_id])
+    redirect_to admin_manage_roles_path, notice: "Role updated successfully."
+  end
+
   private
 
   def verify_admin_password
