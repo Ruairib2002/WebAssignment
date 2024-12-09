@@ -11,21 +11,11 @@
   <% current_user.groups.each do |group| %>
   <% if group.id.present? %>
   <li><%= link_to "#{group.name} Messages", group_messages_path(group_id: group.id) %></li>
-  <% else %>
-  <li>No valid group ID available</li>
   <% end %>
   <% end %>
-  <% else %>
-  <li>No Groups Available</li>
   <% end %>
 
-  <% if current_user.role.role_name == "teacher" %>
-  <li><%= link_to 'Create New Group', new_group_path %></li>
-  <% end %>
-
-  <% if current_user.role.role_name == "admin" %>
   <li><%= link_to 'Admin Panel', admin_panel_path %></li>
-  <% end %>
 
   <li>
     <%= form_for(:user, url: destroy_user_session_path, method: :delete, html: { class: 'logout-form' }) do |f| %>

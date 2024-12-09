@@ -13,7 +13,7 @@ Rails.application.routes.draw do
   get 'search', to: 'profiles#search', as: 'search'
 
   resources :groups do
-    resources :messages, only: [:index, :create, :new]  # Added :new route here
+    resources :messages, only: [:index, :create, :new]
     member do
       post 'add_student'
       delete 'remove_student'
@@ -27,6 +27,10 @@ Rails.application.routes.draw do
   resources :messages, only: [:new, :create]
 
   get 'admin/panel', to: 'admin#panel', as: 'admin_panel'
+  get 'admin/password', to: 'admin#new_password', as: 'new_admin_password'
+  post 'admin/authenticate_password', to: 'admin#authenticate_password', as: 'authenticate_admin_password'
+  get 'admin/manage_roles', to: 'admin#manage_roles', as: 'admin_manage_roles'
+  patch 'admin/update_role/:id', to: 'admin#update_role', as: 'admin_update_role'
 
   namespace :admin do
     resources :users, only: [:index, :show, :edit, :update, :destroy]
