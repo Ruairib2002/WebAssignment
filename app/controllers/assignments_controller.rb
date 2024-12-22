@@ -22,7 +22,7 @@ class AssignmentsController < ApplicationController
     submission = Submission.find_or_create_by(assignment: @assignment, user: student)
     submission.assign_marks(student.id, marks)
 
-    redirect_to @group, notice: "Marks assigned to #{student.full_name}."
+    render json: { marks: submission.marks[student.id.to_s] }
   end
 
   private

@@ -11,19 +11,18 @@
     <h3>Assign Marks for Submissions</h3>
     <% @group.assignments.each do |assignment| %>
     <div>
-      <!-- Correctly pass group_id and assignment_id -->
       <%= form_with url: assign_marks_group_assignment_path(@group, assignment, assignment_id: assignment.id), method: :post, local: true do |form| %>
       <%= form.hidden_field :student_id, value: user.id %>
       <div>
         <%= form.label :marks, "Assign Marks to #{user.full_name} for #{assignment.title}" %>
-        <%= form.number_field :marks, value: assignment.marks_for_user(user.id), class: "form-control" %>
+        <%= form.number_field :marks, value: assignment.marks_for_user(user.id), class: "form-control", id: "marks_field_#{assignment.id}_#{user.id}" %>
       </div>
       <%= form.submit 'Assign Marks', class: 'btn btn-success mt-2' %>
       <% end %>
     </div>
 
     <% if assignment.marks_for_user(user.id).present? %>
-    <p>Assigned Marks: <%= assignment.marks_for_user(user.id) %></p>
+    <p>Assigned Marks: <span id="marks_display_<%= assignment.id %>_<%= user.id %>"><%= assignment.marks_for_user(user.id) %></span></p>
     <%= link_to 'Edit Marks', edit_assignment_marks_group_assignment_path(@group, assignment.id, student_id: user.id), class: 'btn btn-warning' %>
     <% else %>
     <p>No marks assigned yet.</p>
