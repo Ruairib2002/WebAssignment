@@ -53,7 +53,10 @@ class AdminController < ApplicationController
 
   def update_user
     @user = User.find(params[:id])
-    if @user.update(user_params)
+
+    password_params = user_params[:password].present? ? { password: user_params[:password], password_confirmation: user_params[:password_confirmation] } : {}
+
+    if @user.update(user_params.except(:password, :password_confirmation).merge(password_params))
       redirect_to admin_users_path, notice: "User updated successfully."
     else
       render :edit_user
