@@ -7,7 +7,6 @@ Rails.application.routes.draw do
 
   get 'dashboard', to: 'dashboard#index', as: 'dashboard'
 
-  # Profile routes with user ID
   get 'profile/:id', to: 'profiles#show', as: 'profile'
   get 'profile/:id/edit', to: 'profiles#edit', as: 'edit_profile'
   patch 'profile/:id', to: 'profiles#update', as: 'update_profile'
@@ -16,17 +15,14 @@ Rails.application.routes.draw do
 
   resources :groups do
     resources :messages, only: [:index, :create, :new]
-
-    resources :assignments, only: [] do
-      post 'assign_marks', on: :member  # Nested route for assigning marks
+    resources :assignments, only: [:index, :new, :create, :show] do
+      post 'assign_marks/:assignment_id', on: :member, to: 'assignments#assign_marks', as: 'assign_marks'
     end
-
     member do
       post 'add_student'
       delete 'remove_student'
       post 'upload_file'
     end
-
     collection do
       get 'search'
     end
@@ -34,7 +30,6 @@ Rails.application.routes.draw do
 
   resources :messages, only: [:new, :create]
 
-  # Admin routes
   get 'admin/panel', to: 'admin#panel', as: 'admin_panel'
   get 'admin/password', to: 'admin#new_password', as: 'new_admin_password'
   post 'admin/authenticate_password', to: 'admin#authenticate_password', as: 'authenticate_admin_password'

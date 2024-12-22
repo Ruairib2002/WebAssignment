@@ -8,18 +8,26 @@
     <%= user.full_name %>
 
     <% if current_user.role.role_name == "teacher" %>
-    <%= form_with url: assign_marks_group_assignment_path(@group, user), method: :post, local: true do |form| %>
-    <%= form.hidden_field :student_id, value: user.id %>
-
+    <h3>Assign Marks for Submissions</h3>
     <% @group.assignments.each do |assignment| %>
     <div>
-      <%= form.label :marks, "Assign Marks to #{user.full_name} for #{assignment.title}" %>
-      <%= form.text_field :marks, value: assignment.marks_for_user(user.id) %>
-      <%= form.hidden_field :assignment_id, value: assignment.id %>
+      <!-- Correctly pass group_id and assignment_id -->
+      <%= form_with url: assign_marks_group_assignment_path(@group, assignment, assignment_id: assignment.id), method: :post, local: true do |form| %>
+      <%= form.hidden_field :student_id, value: user.id %>
+      <div>
+        <%= form.label :marks, "Assign Marks to #{user.full_name} for #{assignment.title}" %>
+        <%= form.number_field :marks, value: assignment.marks_for_user(user.id), class: "form-control" %>
+      </div>
+      <%= form.submit 'Assign Marks', class: 'btn btn-success mt-2' %>
+      <% end %>
     </div>
-    <% end %>
 
-    <%= form.submit 'Assign Marks', class: 'btn btn-success' %>
+    <% if assignment.marks_for_user(user.id).present? %>
+    <p>Assigned Marks: <%= assignment.marks_for_user(user.id) %></p>
+    <%= link_to 'Edit Marks', edit_assignment_marks_group_assignment_path(@group, assignment.id, student_id: user.id), class: 'btn btn-warning' %>
+    <% else %>
+    <p>No marks assigned yet.</p>
+    <% end %>
     <% end %>
     <% end %>
 
@@ -36,32 +44,24 @@
 </ul>
 
 <% if current_user.role.role_name == "teacher" %>
-<h3>Add Student to Group</h3>
-<%= form_with url: add_student_group_path(@group), method: :post, local: true do |form| %>
-<%= form.select :student_id, @students.map { |s| [s.full_name, s.id] }, prompt: "Select a student" %>
-<%= form.submit "Add Student", class: "btn btn-primary" %>
+<h3>Create New Assignment</h3>
+<%= link_to 'Create Assignment', new_group_assignment_path(@group), class: 'btn btn-primary' %>
 <% end %>
 
-<h3>Upload a File</h3>
-<%= form_with url: upload_file_group_path(@group), method: :post, multipart: true do |form| %>
-<%= form.file_field :file %>
-<%= form.submit "Upload File", class: "btn btn-success" %>
-<% end %>
-<% end %>
-
-<h2>Uploaded Files:</h2>
+<h2>Assignments</h2>
 <ul>
-  <% @group.files.each do |file| %>
+  <% @group.assignments.each do |assignment| %>
   <li>
-    <%= link_to file.filename.to_s, url_for(file), target: "_blank" %>
+    <%= assignment.title %> - <%= assignment.description %>
+    <br>
+    Due: <%= assignment.due_date.strftime("%B %d, %Y %I:%M %p") %>
+    <% if current_user.role.role_name == "student" %>
+    <h3>Submit File for this Assignment</h3>
+    <%= form_with url: submit_assignment_group_assignment_path(@group, assignment), method: :post, multipart: true, local: true do |form| %>
+    <%= form.file_field :file, class: "form-control" %>
+    <%= form.submit 'Submit File', class: 'btn btn-success mt-2' %>
+    <% end %>
+    <% end %>
   </li>
   <% end %>
 </ul>
-
-<h2>Messages:</h2>
-<% @messages.each do |message| %>
-<div>
-  <p><%= message.message_content %></p>
-  <small>Posted by: <%= message.posted_by %> at <%= message.created_at %></small>
-</div>
-<% end %>
