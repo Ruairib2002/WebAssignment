@@ -18,7 +18,7 @@ Rails.application.routes.draw do
     resources :messages, only: [:index, :create, :new]
 
     resources :assignments, only: [] do
-      post 'assign_marks', on: :member
+      post 'assign_marks', on: :member  # Nested route for assigning marks
     end
 
     member do

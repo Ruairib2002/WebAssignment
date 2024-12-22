@@ -41,7 +41,6 @@
   background-color: #34495E;
 }
 
-/* Sidebar trigger area (on the left side of the page) */
 body::before {
   content: '';
   position: fixed;
@@ -53,7 +52,6 @@ body::before {
   z-index: 999;
 }
 
-/* Navigation bar styles */
 nav {
   background-color: #34495E;
   padding: 10px;
@@ -86,7 +84,6 @@ nav ul li a:hover {
   border-radius: 4px;
 }
 
-/* Flash message styles */
 .flash-messages {
   position: fixed;
   top: 10px;
@@ -111,30 +108,27 @@ nav ul li a:hover {
   color: white;
 }
 
-/* Main container styling */
 main.container {
   max-width: 960px;
   margin: 0 auto;
   padding: 20px;
+  text-align: center;
 }
 
-/* Make the page content responsive */
-@media screen and (max-width: 768px) {
-  nav ul {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  nav ul li {
-    margin: 5px 0;
-  }
+h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
 }
 
-/* Button Styles */
+p {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
 .btn {
   display: inline-block;
-  padding: 10px 15px;
-  font-size: 16px;
+  padding: 12px 18px;
+  font-size: 18px;
   text-align: center;
   cursor: pointer;
   border: none;
@@ -178,7 +172,6 @@ main.container {
   background-color: #218838;
 }
 
-/* Accessibility Enhancements */
 body {
   font-family: Arial, sans-serif;
   color: #2c3e50;
@@ -214,7 +207,6 @@ select {
   text-shadow: 1px 1px 2px #000000;
 }
 
-/* Form container */
 .form-container {
   display: flex;
   justify-content: center;
@@ -283,7 +275,6 @@ select {
   outline: none;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .form-wrapper {
     padding: 20px;

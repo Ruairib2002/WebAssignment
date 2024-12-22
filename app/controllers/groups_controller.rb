@@ -61,14 +61,18 @@ class GroupsController < ApplicationController
   def assign_marks
     @group = Group.find(params[:id])
     student = User.find(params[:student_id])
+    assignment = Assignment.find(params[:assignment_id])
     mark = params[:marks].to_f
 
-    assignment = Assignment.find(params[:assignment_id])
-    submission = Submission.find_or_create_by(assignment: assignment, user: student)
+    unless @group.users.include?(student)
+      redirect_to @group, alert: "Student is not in this group."
+      return
+    end
 
+    submission = Submission.find_or_create_by(assignment: assignment, user: student)
     submission.assign_marks(student.id, mark)
 
-    redirect_to @group, notice: "Marks assigned successfully to #{student.full_name}."
+    redirect_to @group, notice: "Marks assigned successfully to #{student.full_name} for #{assignment.title}."
   end
 
   def search

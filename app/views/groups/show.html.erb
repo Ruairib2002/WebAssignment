@@ -8,13 +8,14 @@
     <%= user.full_name %>
 
     <% if current_user.role.role_name == "teacher" %>
-    <%= form_with url: assign_marks_group_path(@group), method: :post, local: true do |form| %>
+    <%= form_with url: assign_marks_group_assignment_path(@group, user), method: :post, local: true do |form| %>
     <%= form.hidden_field :student_id, value: user.id %>
 
     <% @group.assignments.each do |assignment| %>
     <div>
       <%= form.label :marks, "Assign Marks to #{user.full_name} for #{assignment.title}" %>
       <%= form.text_field :marks, value: assignment.marks_for_user(user.id) %>
+      <%= form.hidden_field :assignment_id, value: assignment.id %>
     </div>
     <% end %>
 
