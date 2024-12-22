@@ -11,7 +11,7 @@ class GroupsController < ApplicationController
     @messages = @group.messages.order(created_at: :desc)
     student_role = Role.find_by(role_name: 'student')
     @students = User.where(role_id: student_role.id).where.not(id: @group.user_ids)
-    @assignments = @group.assignments # Fetch assignments for the group
+    @assignments = @group.assignments
   end
 
   def new
@@ -58,16 +58,15 @@ class GroupsController < ApplicationController
     end
   end
 
-  # New action to assign marks to students' submissions
   def assign_marks
     @group = Group.find(params[:id])
-    student = User.find(params[:student_id]) # Find the student to assign marks to
-    mark = params[:marks].to_f # Get the mark from the form
+    student = User.find(params[:student_id])
+    mark = params[:marks].to_f
 
-    assignment = Assignment.find(params[:assignment_id]) # Find the specific assignment
-    submission = Submission.find_or_create_by(assignment: assignment, user: student) # Create or find the student's submission
+    assignment = Assignment.find(params[:assignment_id])
+    submission = Submission.find_or_create_by(assignment: assignment, user: student)
 
-    submission.assign_marks(student.id, mark) # Assign the mark
+    submission.assign_marks(student.id, mark)
 
     redirect_to @group, notice: "Marks assigned successfully to #{student.full_name}."
   end
