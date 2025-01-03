@@ -2,7 +2,18 @@
 <p>Email: <%= @user.email %></p>
 <p>Joined on: <%= @user.created_at.to_date %></p>
 
+<p>Bio: <%= @user.bio.present? ? @user.bio : 'No bio available' %></p>
+
+<% if @user.profile_picture.attached? %>
+<div class="profile-picture">
+  <%= image_tag url_for(@user.profile_picture.variant(resize_to_fill: [150, 150])), class: 'img-thumbnail' %>
+</div>
+<% else %>
+<div class="placeholder-image" style="width: 150px; height: 150px; background-color: lightgray; text-align: center; display: flex; justify-content: center; align-items: center; border-radius: 50%;">
+  <%= @user.full_name[0].upcase %>
+</div>
+<% end %>
+
 <%= link_to 'Edit Profile', edit_profile_path(@user), class: 'btn btn-secondary' %>
 <%= link_to 'Search Profiles', search_path, class: 'btn btn-primary' %>
-
 <%= link_to 'Message', new_message_path(user_id: @user.id), class: 'btn btn-primary' %>

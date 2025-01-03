@@ -6,6 +6,8 @@ class User < ApplicationRecord
   has_many :user_groups
   has_many :groups, through: :user_groups
 
+  has_one_attached :profile_picture
+
   devise :database_authenticatable, :registerable, :recoverable, :rememberable, :validatable
 
   after_initialize :set_default_role, if: :new_record?
