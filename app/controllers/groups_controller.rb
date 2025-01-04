@@ -3,7 +3,11 @@ class GroupsController < ApplicationController
   before_action :check_teacher_role, only: [:add_student, :remove_student, :upload_file, :assign_marks]
 
   def index
-    @groups = current_user.groups
+    if params[:query].present?
+      @groups = current_user.groups.where('name LIKE ?', "%#{params[:query]}%")
+    else
+      @groups = current_user.groups
+    end
   end
 
   def show
@@ -32,7 +36,6 @@ class GroupsController < ApplicationController
   def add_student
     group = Group.find(params[:id])
     student = User.find(params[:student_id])
-
     unless group.users.include?(student)
       group.users << student
       redirect_to group, notice: "Student added successfully."
@@ -63,24 +66,13 @@ class GroupsController < ApplicationController
     student = User.find(params[:student_id])
     assignment = Assignment.find(params[:assignment_id])
     mark = params[:marks].to_f
-
     unless @group.users.include?(student)
       redirect_to @group, alert: "Student is not in this group."
       return
     end
-
     submission = Submission.find_or_create_by(assignment: assignment, user: student)
     submission.assign_marks(student.id, mark)
-
     redirect_to @group, notice: "Marks assigned successfully to #{student.full_name} for #{assignment.title}."
-  end
-
-  def search
-    if params[:query].present?
-      @groups = Group.where('name LIKE ?', "%#{params[:query]}%")
-    else
-      @groups = Group.all
-    end
   end
 
   private

@@ -1,11 +1,17 @@
 <% if user_signed_in? %>
 <h2>Your Groups</h2>
+<%= form_with url: groups_path, method: :get, local: true do %>
+<div class="form-group">
+  <%= label_tag :query, "Search Groups:" %>
+  <%= text_field_tag :query, params[:query], class: 'form-control', placeholder: 'Enter group name...' %>
+  <%= submit_tag 'Search', class: 'btn btn-secondary mt-2' %>
+</div>
+<% end %>
 <ul>
   <% @groups.each do |group| %>
   <li><%= link_to group.name, group_path(group) %></li>
   <% end %>
 </ul>
-
 <%= link_to 'Create New Group', new_group_path, class: 'btn btn-primary' %>
 <% else %>
 <p>Please sign in to view your groups.</p>
