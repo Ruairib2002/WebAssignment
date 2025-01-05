@@ -1,9 +1,7 @@
 require 'graphviz'
 
-# Create a new directed graph (digraph) and apply graph-level attributes
 graph = GraphViz.new(:G, type: :digraph, rankdir: 'LR', nodesep: '1', ranksep: '2')
 
-# Add nodes (tables) to the graph, specifying primary keys (PK) and foreign keys (FK)
 graph.add_nodes("Users", label: "Users\nuser_id (PK)\nfull_name\nemail\nrole_id (FK)\nbio\nprofile_picture (FK to ActiveStorageAttachments)", shape: 'record')
 graph.add_nodes("Roles", label: "Roles\nrole_id (PK)\nrole_name", shape: 'record')
 graph.add_nodes("Groups", label: "Groups\ngroup_id (PK)\ngroup_name\ndescription", shape: 'record')
@@ -17,7 +15,6 @@ graph.add_nodes("ActiveStorageAttachments", label: "ActiveStorageAttachments\nat
 graph.add_nodes("ActiveStorageBlobs", label: "ActiveStorageBlobs\nblob_id (PK)\nfilename\nchecksum", shape: 'record')
 graph.add_nodes("ActiveStorageVariantRecords", label: "ActiveStorageVariantRecords\nvariant_record_id (PK)\nblob_id (FK)\nvariation_digest", shape: 'record')
 
-# Add edges (relationships) between the fields (not just the tables)
 graph.add_edges("Users", "Roles", label: "has role", dir: 'forward')
 graph.add_edges("Assignments", "Groups", label: "belongs to group", dir: 'forward')
 graph.add_edges("Submissions", "Assignments", label: "belongs to", dir: 'forward')
@@ -31,16 +28,13 @@ graph.add_edges("StudentGroups", "Groups", label: "group member", dir: "both")
 graph.add_edges("UserGroups", "Users", label: "user in", dir: "both")
 graph.add_edges("UserGroups", "Groups", label: "group member", dir: "both")
 
-# ActiveStorage relationships (using blobs and attachments)
 graph.add_edges("ActiveStorageAttachments", "ActiveStorageBlobs", label: "attached to", dir: "forward")
 graph.add_edges("ActiveStorageVariantRecords", "ActiveStorageBlobs", label: "variant of", dir: "forward")
 graph.add_edges("Users", "ActiveStorageAttachments", label: "has profile_picture", dir: "forward")
 
-# Add edges for specific fields within tables (columns)
 graph.add_edges("Users:user_id", "Roles:role_id", label: "user has role")
 graph.add_edges("Users:profile_picture", "ActiveStorageAttachments:record_id", label: "has profile_picture")
 
-# Define the output path and save the diagram as a PNG file
 output_path = File.expand_path("~/Desktop/Assignment_ER_Diagram.png")
 graph.output(png: output_path)
 
