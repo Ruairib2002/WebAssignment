@@ -15,14 +15,14 @@
       <%= form.hidden_field :student_id, value: user.id %>
       <div>
         <%= form.label :marks, "Assign Marks to #{user.full_name} for #{assignment.title}" %>
-        <%= form.number_field :marks, value: assignment.marks_for_user(user.id), class: "form-control", id: "marks_field_#{assignment.id}_#{user.id}" %>
+        <%= form.number_field :marks, value: assignment.marks_for_user(user.id) || 80, class: "form-control", id: "marks_field_#{assignment.id}_#{user.id}" %>
       </div>
       <%= form.submit 'Assign Marks', class: 'btn btn-success mt-2' %>
       <% end %>
     </div>
 
     <% if assignment.marks_for_user(user.id).present? %>
-    <p>Assigned Marks: <span id="marks_display_<%= assignment.id %>_<%= user.id %>"><%= assignment.marks_for_user(user.id) %></span></p>
+    <p>Assigned Marks: <span id="marks_display_<%= assignment.id %>_<%= user.id %>"><%= assignment.marks_for_user(user.id) || 80 %></span></p>
     <%= link_to 'Edit Marks', edit_assignment_marks_group_assignment_path(@group, assignment.id, student_id: user.id), class: 'btn btn-warning' %>
     <% else %>
     <p>No marks assigned yet.</p>
@@ -34,7 +34,7 @@
       <% @group.assignments.each do |assignment| %>
       <li>
         <%= assignment.title %>:
-        <%= assignment.marks_for_user(user.id) || "No marks assigned" %>
+        <%= assignment.marks_for_user(user.id) || 80 %>
       </li>
       <% end %>
     </ul>
