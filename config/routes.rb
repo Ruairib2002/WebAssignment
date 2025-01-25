@@ -52,4 +52,7 @@ Rails.application.routes.draw do
     resources :users, only: [:index, :show, :edit, :update, :destroy]
     resources :groups, only: [:index, :show, :edit, :update, :destroy]
   end
+
+  # Add the following line for issues resource:
+  resources :issues
 end

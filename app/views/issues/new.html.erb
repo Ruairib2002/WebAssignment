@@ -1,0 +1,36 @@
+<h1>Report a New Issue</h1>
+
+<%= form_for @issue do |f| %>
+<% if @issue.errors.any? %>
+<div class="alert alert-danger">
+  <ul>
+    <% @issue.errors.full_messages.each do |message| %>
+    <li><%= message %></li>
+    <% end %>
+  </ul>
+</div>
+<% end %>
+
+<div class="form-group">
+  <%= f.label :description %>
+  <%= f.text_area :description, class: 'form-control', rows: 3 %>
+</div>
+
+<div class="form-group">
+  <%= f.label :category %>
+  <%= f.select :category, ['roadwork', 'police', 'accident', 'other'], {}, class: 'form-control' %>
+</div>
+
+<div class="form-group">
+  <%= f.label :latitude %>
+  <%= f.number_field :latitude, step: 'any', class: 'form-control' %>
+</div>
+
+<div class="form-group">
+  <%= f.label :longitude %>
+  <%= f.number_field :longitude, step: 'any', class: 'form-control' %>
+</div>
+
+<%= f.submit 'Report Issue', class: 'btn btn-success' %>
+<% end %>
+<%= link_to 'Back to Issues', issues_path, class: 'btn btn-secondary' %>

@@ -9,8 +9,11 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <!-- Import map should be loaded before any JavaScript -->
   <%= javascript_importmap_tags %>
+
+  <!-- Include stylesheets -->
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 </head>
 
 <body>
@@ -27,11 +30,16 @@
     <% end %>
   </div>
 
+  <!-- Render the sidebar if it exists -->
   <%= render 'layouts/sidebar' %>
 
   <main class="container mx-auto mt-28 px-5 flex">
+    <!-- Main content will be injected here -->
     <%= yield %>
   </main>
+
+  <!-- Load Google Maps API asynchronously and defer execution of initMap -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWzmLk5ro9tUy_AjHdyoo3p8TYuE2R4QM&callback=initMap" async defer></script>
 </body>
 
 </html>

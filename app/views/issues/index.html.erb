@@ -1,0 +1,28 @@
+<h1>Issues</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Description</th>
+      <th>Category</th>
+      <th>Location</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @issues.each do |issue| %>
+    <tr>
+      <td><%= issue.description %></td>
+      <td><%= issue.category %></td>
+      <td><%= "Lat: #{issue.latitude}, Lng: #{issue.longitude}" %></td>
+      <td>
+        <%= link_to 'Show', issue_path(issue) %> |
+        <%= link_to 'Edit', edit_issue_path(issue) %> |
+        <%= link_to 'Destroy', issue_path(issue), method: :delete, data: { confirm: 'Are you sure?' } %>
+      </td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to 'Report a New Issue', new_issue_path, class: 'btn btn-primary' %>

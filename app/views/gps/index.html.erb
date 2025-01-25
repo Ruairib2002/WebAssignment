@@ -1,9 +1,11 @@
 <h1>GPS Map</h1>
+
 <div id="map" style="height: 500px; width: 100%;"></div>
 
 <script>
-  function initMap() {
-    // Initialize the map
+  // Define initMap globally to make it accessible to Google Maps API
+  window.initMap = function() {
+    // Initialize the map with a default center and zoom level
     const map = new google.maps.Map(document.getElementById('map'), {
       center: {
         lat: 37.7749,
@@ -12,8 +14,10 @@
       zoom: 12,
     });
 
-    // Add existing issues to the map
-    const issues = < %= raw @issues.to_json.html_safe % > ;
+    // Inject the issues from the controller into the JavaScript
+    const issues = < %= @issues.to_json.html_safe % > ;
+
+    // Loop through each issue and add a marker to the map
     issues.forEach(issue => {
       new google.maps.Marker({
         position: {
@@ -26,53 +30,20 @@
       });
     });
 
-    // Add click listener to add a new issue
-    map.addListener('click', function(event) {
-      const latitude = event.latLng.lat();
-      const longitude = event.latLng.lng();
-
-      const description = prompt('Enter a description for the issue:');
-      const category = prompt('Enter a category (e.g., roadwork, police, accident):');
-
-      if (description && category) {
-        fetch('<%= report_issue_path %>', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': '<%= form_authenticity_token %>',
-          },
-          body: JSON.stringify({
-            issue: {
-              latitude,
-              longitude,
-              description,
-              category
-            },
-          }),
-        }).then(response => {
-          if (response.ok) {
-            alert('Issue reported successfully!');
-            location.reload();
-          } else {
-            alert('Error reporting issue!');
-          }
-        });
-      }
-    });
-
+    // Function to return different icons based on the issue category
     function getIcon(category) {
       switch (category.toLowerCase()) {
         case 'roadwork':
-          return 'roadwork-icon.png';
+          return 'roadwork-icon.png'; // Ensure this path is correct
         case 'police':
-          return 'police-icon.png';
+          return 'police-icon.png'; // Ensure this path is correct
         case 'accident':
-          return 'accident-icon.png';
+          return 'accident-icon.png'; // Ensure this path is correct
         default:
-          return 'default-icon.png';
+          return 'default-icon.png'; // Ensure this path is correct
       }
     }
   }
 </script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWzmLk5ro9tUy_AjHdyoo3p8TYuE2R4QM&callback=initMap" async defer></script>
+<%= link_to 'View All Issues', issues_path, class: 'btn btn-primary' %>
