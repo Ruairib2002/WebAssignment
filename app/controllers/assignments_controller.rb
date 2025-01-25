@@ -18,7 +18,7 @@ class AssignmentsController < ApplicationController
     @assignment = @group.assignments.find(params[:assignment_id])
     student = User.find(params[:student_id])
 
-    marks = 80
+    marks = 80%
 
     submission = Submission.find_or_create_by(assignment: @assignment, user: student)
     submission.assign_marks(student.id, marks)

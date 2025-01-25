@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get 'gps/index'
   get "up" => "rails/health#show", as: :rails_health_check
 
   root to: 'home#index'
@@ -27,6 +28,9 @@ Rails.application.routes.draw do
       get 'search'
     end
   end
+
+  get 'gps', to: 'gps#index', as: 'gps'
+  post 'gps/report_issue', to: 'gps#report_issue', as: 'report_issue'
 
   resources :messages, only: [:new, :create]
 

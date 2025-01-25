@@ -1,0 +1,78 @@
+<h1>GPS Map</h1>
+<div id="map" style="height: 500px; width: 100%;"></div>
+
+<script>
+  function initMap() {
+    // Initialize the map
+    const map = new google.maps.Map(document.getElementById('map'), {
+      center: {
+        lat: 37.7749,
+        lng: -122.4194
+      }, // Default location (San Francisco)
+      zoom: 12,
+    });
+
+    // Add existing issues to the map
+    const issues = < %= raw @issues.to_json.html_safe % > ;
+    issues.forEach(issue => {
+      new google.maps.Marker({
+        position: {
+          lat: issue.latitude,
+          lng: issue.longitude
+        },
+        map: map,
+        title: issue.description,
+        icon: getIcon(issue.category),
+      });
+    });
+
+    // Add click listener to add a new issue
+    map.addListener('click', function(event) {
+      const latitude = event.latLng.lat();
+      const longitude = event.latLng.lng();
+
+      const description = prompt('Enter a description for the issue:');
+      const category = prompt('Enter a category (e.g., roadwork, police, accident):');
+
+      if (description && category) {
+        fetch('<%= report_issue_path %>', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '<%= form_authenticity_token %>',
+          },
+          body: JSON.stringify({
+            issue: {
+              latitude,
+              longitude,
+              description,
+              category
+            },
+          }),
+        }).then(response => {
+          if (response.ok) {
+            alert('Issue reported successfully!');
+            location.reload();
+          } else {
+            alert('Error reporting issue!');
+          }
+        });
+      }
+    });
+
+    function getIcon(category) {
+      switch (category.toLowerCase()) {
+        case 'roadwork':
+          return 'roadwork-icon.png';
+        case 'police':
+          return 'police-icon.png';
+        case 'accident':
+          return 'accident-icon.png';
+        default:
+          return 'default-icon.png';
+      }
+    }
+  }
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWzmLk5ro9tUy_AjHdyoo3p8TYuE2R4QM&callback=initMap" async defer></script>
