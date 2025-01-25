@@ -1,28 +1,46 @@
-<h1>Issues</h1>
+<h1>Issues Map</h1>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Description</th>
-      <th>Category</th>
-      <th>Location</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @issues.each do |issue| %>
-    <tr>
-      <td><%= issue.description %></td>
-      <td><%= issue.category %></td>
-      <td><%= "Lat: #{issue.latitude}, Lng: #{issue.longitude}" %></td>
-      <td>
-        <%= link_to 'Show', issue_path(issue) %> |
-        <%= link_to 'Edit', edit_issue_path(issue) %> |
-        <%= link_to 'Destroy', issue_path(issue), method: :delete, data: { confirm: 'Are you sure?' } %>
-      </td>
-    </tr>
-    <% end %>
-  </tbody>
-</table>
+<div id="map" style="height: 500px; width: 100%;"></div>
 
-<%= link_to 'Report a New Issue', new_issue_path, class: 'btn btn-primary' %>
+<script>
+  // Define initMap globally to make it accessible to Google Maps API
+  window.initMap = function() {
+    const map = new google.maps.Map(document.getElementById('map'), {
+      center: {
+        lat: 37.7749,
+        lng: -122.4194
+      }, // Default location (San Francisco)
+      zoom: 12,
+    });
+
+    // Inject the issues from the controller into the JavaScript
+    const issues = < %= @issues.to_json.html_safe % > ;
+
+    // Loop through each issue and add a marker to the map
+    issues.forEach(issue => {
+      new google.maps.Marker({
+        position: {
+          lat: issue.latitude,
+          lng: issue.longitude
+        },
+        map: map,
+        title: issue.description,
+        icon: getIcon(issue.category),
+      });
+    });
+
+    // Function to return different icons based on the issue category
+    function getIcon(category) {
+      switch (category.toLowerCase()) {
+        case 'roadwork':
+          return 'roadwork-icon.png'; // Ensure this path is correct
+        case 'police':
+          return 'police-icon.png'; // Ensure this path is correct
+        case 'accident':
+          return 'accident-icon.png'; // Ensure this path is correct
+        default:
+          return 'default-icon.png'; // Ensure this path is correct
+      }
+    }
+  }
+</script>

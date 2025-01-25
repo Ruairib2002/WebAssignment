@@ -1,49 +1,94 @@
-<h1>GPS Map</h1>
+<!DOCTYPE html>
+<html lang="en">
 
-<div id="map" style="height: 500px; width: 100%;"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GPS Map</title>
 
-<script>
-  // Define initMap globally to make it accessible to Google Maps API
-  window.initMap = function() {
-    // Initialize the map with a default center and zoom level
-    const map = new google.maps.Map(document.getElementById('map'), {
-      center: {
-        lat: 37.7749,
-        lng: -122.4194
-      }, // Default location (San Francisco)
-      zoom: 12,
-    });
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    // Inject the issues from the controller into the JavaScript
-    const issues = < %= @issues.to_json.html_safe % > ;
+  <!-- Import map should be loaded before any JavaScript -->
+  <%= javascript_importmap_tags %>
 
-    // Loop through each issue and add a marker to the map
-    issues.forEach(issue => {
-      new google.maps.Marker({
-        position: {
-          lat: issue.latitude,
-          lng: issue.longitude
-        },
-        map: map,
-        title: issue.description,
-        icon: getIcon(issue.category),
+  <!-- Include stylesheets -->
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+  <!-- Load Google Maps API asynchronously -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWzmLk5ro9tUy_AjHdyoo3p8TYuE2R4QM&callback=initMap" async defer></script>
+</head>
+
+<body>
+  <div class="flash-messages">
+    <% if notice %>
+    <div class="alert alert-success">
+      <%= notice %>
+    </div>
+    <% end %>
+    <% if alert %>
+    <div class="alert alert-danger">
+      <%= alert %>
+    </div>
+    <% end %>
+  </div>
+
+  <!-- Render the sidebar if it exists -->
+  <%= render 'layouts/sidebar' %>
+
+  <main class="container mx-auto mt-28 px-5 flex">
+    <!-- Main content will be injected here -->
+    <h1>GPS Map</h1>
+
+    <!-- Map container where the Google Map will be rendered -->
+    <div id="map" style="height: 500px; width: 100%;"></div>
+  </main>
+
+  <!-- Script to initialize the map -->
+  <script>
+    // Function to initialize Google Maps
+    window.initMap = function() {
+      const map = new google.maps.Map(document.getElementById('map'), {
+        center: {
+          lat: 0,
+          lng: 0
+        }, // Centering the map on (0,0) for a global view
+        zoom: 2, // Set zoom level for world view
       });
-    });
 
-    // Function to return different icons based on the issue category
-    function getIcon(category) {
-      switch (category.toLowerCase()) {
-        case 'roadwork':
-          return 'roadwork-icon.png'; // Ensure this path is correct
-        case 'police':
-          return 'police-icon.png'; // Ensure this path is correct
-        case 'accident':
-          return 'accident-icon.png'; // Ensure this path is correct
-        default:
-          return 'default-icon.png'; // Ensure this path is correct
+      // Inject the issues from the controller into the JavaScript
+      const issues = < %= @issues.to_json.html_safe % > ;
+
+      // Loop through each issue and add a marker to the map
+      issues.forEach(issue => {
+        new google.maps.Marker({
+          position: {
+            lat: issue.latitude,
+            lng: issue.longitude
+          },
+          map: map,
+          title: issue.description,
+          icon: getIcon(issue.category),
+        });
+      });
+
+      // Function to return different icons based on the issue category
+      function getIcon(category) {
+        switch (category.toLowerCase()) {
+          case 'roadwork':
+            return 'roadwork-icon.png'; // Make sure this path is correct
+          case 'police':
+            return 'police-icon.png'; // Make sure this path is correct
+          case 'accident':
+            return 'accident-icon.png'; // Make sure this path is correct
+          default:
+            return 'default-icon.png'; // Make sure this path is correct
+        }
       }
     }
-  }
-</script>
+  </script>
 
-<%= link_to 'View All Issues', issues_path, class: 'btn btn-primary' %>
+  <%= link_to 'View All Issues', issues_path, class: 'btn btn-primary' %>
+</body>
+
+</html>
