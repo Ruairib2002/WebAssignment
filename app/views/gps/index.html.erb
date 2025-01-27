@@ -41,54 +41,17 @@
     <h1>GPS Map</h1>
 
     <!-- Map container where the Google Map will be rendered -->
-    <div id="map" style="height: 500px; width: 100%;"></div>
+    <div id="map" data-controller="gps" style="height: 500px; width: 100%;"></div>
+
+    <!-- Container for the legend -->
+    <div id="legend" style="position: absolute; bottom: 10px; right: 10px; background-color: white; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
   </main>
 
-  <!-- Script to initialize the map -->
-  <script>
-    // Function to initialize Google Maps
-    window.initMap = function() {
-      const map = new google.maps.Map(document.getElementById('map'), {
-        center: {
-          lat: 0,
-          lng: 0
-        }, // Centering the map on (0,0) for a global view
-        zoom: 2, // Set zoom level for world view
-      });
-
-      // Inject the issues from the controller into the JavaScript
-      const issues = < %= @issues.to_json.html_safe % > ;
-
-      // Loop through each issue and add a marker to the map
-      issues.forEach(issue => {
-        new google.maps.Marker({
-          position: {
-            lat: issue.latitude,
-            lng: issue.longitude
-          },
-          map: map,
-          title: issue.description,
-          icon: getIcon(issue.category),
-        });
-      });
-
-      // Function to return different icons based on the issue category
-      function getIcon(category) {
-        switch (category.toLowerCase()) {
-          case 'roadwork':
-            return 'roadwork-icon.png'; // Make sure this path is correct
-          case 'police':
-            return 'police-icon.png'; // Make sure this path is correct
-          case 'accident':
-            return 'accident-icon.png'; // Make sure this path is correct
-          default:
-            return 'default-icon.png'; // Make sure this path is correct
-        }
-      }
-    }
-  </script>
-
   <%= link_to 'View All Issues', issues_path, class: 'btn btn-primary' %>
+
+  <script src="https://unpkg.com/@hotwired/stimulus@3.0.0/dist/stimulus.js"></script>
+  <script src="https://unpkg.com/@hotwired/stimulus-loading@1.0.0/dist/stimulus-loading.js"></script>
+  <script src="path/to/your/gps_controller.js"></script> <!-- Replace with correct path if needed -->
 </body>
 
 </html>

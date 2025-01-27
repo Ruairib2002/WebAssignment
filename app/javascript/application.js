@@ -1,3 +1,8 @@
-// Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
-import "@hotwired/turbo-rails"
-import "controllers"
+import { Application } from "stimulus"
+import { definitionsFromContext } from "stimulus/webpack-helpers"
+import GpsController from "./controllers/gps_controller"
+
+// Initialize Stimulus application
+const application = Application.start()
+const context = require.context("./controllers", true, /\.js$/)
+application.load(definitionsFromContext(context))
