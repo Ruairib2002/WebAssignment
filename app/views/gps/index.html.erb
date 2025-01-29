@@ -41,7 +41,8 @@
     <h1>GPS Map</h1>
 
     <!-- Map container where the Google Map will be rendered -->
-    <div id="map" data-controller="gps" style="height: 500px; width: 100%;"></div>
+    <div id="map" data-controller="gps" data-gps-lat-value="<%= @lat %>" data-gps-lng-value="<%= @lng %>" data-gps-radius-value="<%= @radius %>" data-gps-businesses-value="<%= @businesses.to_json %>" data-gps-people-value="<%= @people.to_json %>" data-gps-items-value="<%= @items.to_json %>" style="height: 500px; width: 100%;">
+    </div>
 
     <!-- Container for the legend -->
     <div id="legend" style="position: absolute; bottom: 10px; right: 10px; background-color: white; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
@@ -49,9 +50,9 @@
 
   <%= link_to 'View All Issues', issues_path, class: 'btn btn-primary' %>
 
+  <!-- Stimulus.js and GPS controller -->
   <script src="https://unpkg.com/@hotwired/stimulus@3.0.0/dist/stimulus.js"></script>
   <script src="https://unpkg.com/@hotwired/stimulus-loading@1.0.0/dist/stimulus-loading.js"></script>
-  <script src="path/to/your/gps_controller.js"></script> <!-- Replace with correct path if needed -->
 </body>
 
 </html>

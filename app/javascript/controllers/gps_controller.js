@@ -14,7 +14,7 @@ export default class extends Controller {
     ["#f8f9fa", "#dee2e6"], // Light / Dark Light
     ["#6c757d", "#495057"], // Muted / Dark Muted
     ["#6f42c1", "#59359a"], // Purple / Dark Purple
-  ];
+  ]
   numColors = this.colorPairs.length
 
   static values = {
@@ -27,38 +27,38 @@ export default class extends Controller {
   }
 
   connect() {
-    if (typeof(google) != "undefined") {
+    if (typeof (google) !== "undefined") {
       this.infoWindow = new google.maps.InfoWindow();
       this.initMap();
     }
   }
 
   initMap() {
-    this.map();
+    this.createMap();
     if (this.hasRadiusValue) {
-      this.circle();
+      this.createCircle();
     }
-    this.marker();
+    this.createMarker();
 
     if (this.hasBusinessesValue) {
-      this.addMarkersForEntities(this.businessesValue, this.businessColorPair)
+      this.addMarkersForEntities(this.businessesValue, this.businessColorPair);
     }
 
     if (this.hasPeopleValue) {
-      this.addMarkersForEntities(this.peopleValue, this.peopleColorPair)
+      this.addMarkersForEntities(this.peopleValue, this.peopleColorPair);
     }
 
     if (this.hasItemsValue) {
       this.itemsValue.forEach((itemTypeData, index) => {
-        this.addMarkersForEntities(itemTypeData[1], this.colorPairs[index % this.numColors])
-      })
+        this.addMarkersForEntities(itemTypeData[1], this.colorPairs[index % this.numColors]);
+      });
     }
     if (this.hasBusinessesValue || this.hasPeopleValue || this.hasItemsValue) {
       this.addLegend();
     }
   }
 
-  map() {
+  createMap() {
     let lat = parseFloat(this.latTarget.value);
     let lng = parseFloat(this.lngTarget.value);
 
@@ -74,7 +74,7 @@ export default class extends Controller {
       center: center,
       zoom: this.hasRadiusValue ? this.calculateZoom(center.lat(), parseFloat(this.radiusValue)) : 14,
       mapId: "locations"
-    }
+    };
 
     if (!this._map) {
       this._map = new google.maps.Map(this.mapTarget, mapOptions);
@@ -87,9 +87,9 @@ export default class extends Controller {
     return Math.floor(zoom);
   }
 
-  circle() {
+  createCircle() {
     if (!this._circle) {
-      const map = this.map();
+      const map = this.createMap();
       const lat = parseFloat(this.latTarget.value);
       const lng = parseFloat(this.lngTarget.value);
       const radius = this.radiusValue;
@@ -109,7 +109,7 @@ export default class extends Controller {
     return this._circle;
   }
 
-  marker() {
+  createMarker() {
     let lat = parseFloat(this.latTarget.value);
     let lng = parseFloat(this.lngTarget.value);
 
@@ -128,7 +128,7 @@ export default class extends Controller {
 
     if (!this._marker) {
       this._marker = new google.maps.marker.AdvancedMarkerElement({
-        map: this.map(),
+        map: this.createMap(),
         position: mapLocation,
         gmpDraggable: true,
         content: pin.element,
@@ -139,7 +139,7 @@ export default class extends Controller {
     if (this.hasRadiusValue) {
       this._marker.addListener('drag', () => {
         const position = this._marker.position;
-        this.circle().setCenter(position);
+        this.createCircle().setCenter(position);
       });
     }
 
@@ -153,7 +153,7 @@ export default class extends Controller {
   }
 
   addMarkersForEntities(entities, colorPair) {
-    const map = this.map();
+    const map = this.createMap();
     const markers = entities.map((entity) => {
       let title = entity.item_type ? `${entity.item_type}<br/>` : "";
       title += `<a href="${entity.url}">${entity.name}</a>`;
@@ -217,6 +217,6 @@ export default class extends Controller {
       legend.appendChild(legendItem);
     });
 
-    this.map().controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
+    this.createMap().controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
   }
 }
