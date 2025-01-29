@@ -6,14 +6,14 @@ export default class extends Controller {
   businessColorPair = ["#0d6efd", "#0a58ca"]
   peopleColorPair = ["#198754", "#146c43"]
   colorPairs = [
-    ["#d63384", "#a02d6b"], // Dark / Darker Dark
-    ["#fd7e14", "#c4620e"],  // Orange / Dark Orange
-    ["#ffc107", "#cc9a06"], // Warning / Dark Warning
-    ["#6c757d", "#4d5156"], // Secondary / Dark Secondary
-    ["#0dcaf0", "#0a9ab5"], // Info / Dark Info
-    ["#f8f9fa", "#dee2e6"], // Light / Dark Light
-    ["#6c757d", "#495057"], // Muted / Dark Muted
-    ["#6f42c1", "#59359a"], // Purple / Dark Purple
+    ["#d63384", "#a02d6b"],
+    ["#fd7e14", "#c4620e"],
+    ["#ffc107", "#cc9a06"],
+    ["#6c757d", "#4d5156"],
+    ["#0dcaf0", "#0a9ab5"],
+    ["#f8f9fa", "#dee2e6"],
+    ["#6c757d", "#495057"],
+    ["#6f42c1", "#59359a"],
   ]
   numColors = this.colorPairs.length
 

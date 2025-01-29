@@ -9,15 +9,11 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
-  <!-- Import map should be loaded before any JavaScript -->
   <%= javascript_importmap_tags %>
 
-  <!-- Include stylesheets -->
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-  <!-- Include Google Maps API Script with Environment Variable for API Key -->
   <script>
-    // Insert the Google API key into the script dynamically using an environment variable
     const googleApiKey = "<%= ENV['GOOGLE_API_KEY'] %>";
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&callback=initMap`;
@@ -41,33 +37,47 @@
     <% end %>
   </div>
 
-  <!-- Render the sidebar if it exists -->
   <%= render 'layouts/sidebar' %>
 
   <main class="container mx-auto mt-28 px-5 flex">
-    <!-- Main content will be injected here -->
     <%= yield %>
   </main>
 
-  <!-- Map rendering container -->
   <h1>GPS Map</h1>
   <div id="map" style="height: 500px; width: 100%;"></div>
 
-  <!-- Initialize Map -->
   <script>
-    // Define initMap globally to make it accessible to Google Maps API
     window.initMap = function() {
-        // Initialize the map with a default center and zoom level
-        const map = new google.maps.Map(document.getElementById('map'), {
-          center: {
-            lat: 37.7749,
-            lng: -122.4194
-          }, // San Francisco as default center
-          zoom: 12,
+      const map = new google.maps.Map(document.getElementById('map'), {
+        center: {
+          lat: 37.7749,
+          lng: -122.4194
+        },
+        zoom: 12,
+      });
+
+      const issues = < %= raw @issues.to_json % > ;
+
+      issues.forEach(issue => {
+        const marker = new google.maps.Marker({
+          position: {
+            lat: issue.lat,
+            lng: issue.lng
+          },
+          map: map,
+          title: issue.title,
         });
 
-        // Inject the issues from the controller into the JavaScript
-        const issues = < %= raw @issues.to_json % > ; // Injected JSON
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<h3>${issue.title}</h3><p>${issue.description}</p>`,
+        });
 
-        // Loop through each issue and add a marker to the map
-        issues.forEach(issue => {
+        marker.addListener('click', function() {
+          infoWindow.open(map, marker);
+        });
+      });
+    };
+  </script>
+</body>
+
+</html>
