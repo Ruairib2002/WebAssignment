@@ -1,95 +1,87 @@
-.row.mt-2
-.col-6
-%h2.mb-4
-= tt('.location_radius_search')
+<!DOCTYPE html>
+<html lang="en">
 
-= form_tag search_locations_path, method: :get do
-%div{ data: { controller: "maps",
-action: "google-maps-callback@window->maps#initMap",
-maps_lng_value: @lng,
-maps_lat_value: @lat,
-maps_radius_value: @radius_in_m,
-maps_businesses_value: @businesses_value.to_json,
-maps_people_value: @people_value.to_json,
-maps_items_value: @items_value.to_json } }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebAssignment - GPS</title>
 
-.row.mb-4{ data: { controller: "copy-inputs-from", copy_inputs_from_association_index_value: "0" } }
-.col-4{ data: { controller: "select-visibility" }}
-.row.mb-3
-.col.offset-1
-%h4= tt('.starting_point')
-.row.mb-2
-.col-4.text-end
-= label_tag :lat, class: "form-label" do
-= tt('.latitude')
-.col-8
-= text_field_tag :lat, @lat, class: 'form-control', data: { copy_inputs_from_target: "destination", maps_target: "lat" }
-.row.mb-2
-.col-4.text-end
-= label_tag :lng, class: "form-label" do
-= tt('.longitude')
-.col-8
-= text_field_tag :lng, @lng, class: 'form-control', data: { copy_inputs_from_target: "destination", maps_target: "lng" }
-.row.mb-3
-.col-4.text-end
-= label_tag :radius, class: 'form-label' do
-= tt('.radius')
-.col-8
-.input-group
-= select_tag :unit, options_for_select(%w(miles feet), selected: @unit ),
-class: "form-select", data: { maps_target: "unit" }
-= number_field_tag :radius, @radius, class: 'form-control', data: { maps_target: "radius" }
-.row.mb-3
-.col-4.offset-1
-%h4= tt('.select')
-.row.mb-2
-.col-4.text-end
-= label_tag :entity, class: 'form-label' do
-= tt('.entities')
-.col-8
-.btn-group{role: 'group', aria_label:"Basic checkbox toggle button group"}
-= check_box_tag 'btncheck_businesses', '1', params[:btncheck_businesses], class: 'btn-check', autocomplete: 'off'
-= label_tag tt('.businesses'), nil, class: 'btn btn-outline-primary', for: 'btncheck_businesses'
-= check_box_tag 'btncheck_people', '1', params[:btncheck_people], class: 'btn-check', autocomplete: 'off'
-= label_tag tt('.people'), nil, class: 'btn btn-outline-primary', for: 'btncheck_people'
-.row.mb-4
-.col-4.text-end
-= label_tag :item_type_ids, class: 'form-label' do
-= tt('.items')
-.col-8
-= select_tag :item_type_ids,
-options_from_collection_for_select(@item_type_options, :id, :to_label, params[:item_type_ids]),
-{ class: 'form-select form-control',
-multiple: true,
-data: { 'actions-box' => 'true',
-'hide-disabled' => 'true',
-'placeholder' => tt('.select_item_types'),
-controller: 'selectpicker' }}
-.row.mb-3
-.col.offset-1
-%h4= tt('.filter')
-.row.mb-2
-.col-4.text-end
-= label_tag :entity, class: 'form-label' do
-= tt('.program')
-.col-8
-= select_tag :program,
-options_from_collection_for_select(@program_options, :id, :name, params[:program]),
-{ include_blank: tt('.all'), class: "form-select",
-data: { action: "select-visibility#setVisibility",
-select_visibility_target: "program" } }
-.row.mb-2{ data: { select_visibility_target: "row" } }
-.col-4.text-end
-= label_tag :entity, class: 'form-label' do
-= tt('.status')
-.col-8
-= select_tag :status, options_for_select(@status_options, params[:status]),
-{ include_blank: tt('All'), class: "form-select" }
-.row.mt-4
-.col-12
-= submit_tag tt('.submit'), class: 'btn btn-primary float-end', data: { disable_with: t('Please wait...') }
-.col-8.height
-= content_tag :div, nil, data: { maps_target: "map" }, class: 'map'
-.div{id: 'legend', style: 'background: white; margin: 5px; padding: 10px; border-radius: 5px'}
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-= render 'search_results' if (%w(btncheck_businesses btncheck_people item_type_ids) & params.keys).any?
+  <%= javascript_importmap_tags %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+  <script>
+    const googleApiKey = "<%= ENV['GOOGLE_API_KEY'] %>";
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
+</head>
+
+<body>
+  <div class="flash-messages">
+    <% if notice %>
+    <div class="alert alert-success"><%= notice %></div>
+    <% end %>
+    <% if alert %>
+    <div class="alert alert-danger"><%= alert %></div>
+    <% end %>
+  </div>
+
+  <%= render 'layouts/sidebar' %>
+
+  <main class="container mx-auto mt-28 px-5 flex">
+    <%= yield %>
+  </main>
+
+  <h1>GPS Map</h1> <!-- This should remain visible in the header as it's the page title -->
+
+  <div id="map" style="height: 500px; width: 100%;"></div>
+
+  <script>
+    window.initMap = function() {
+      console.log("Google Maps API initialized."); // Confirm that the map is being initialized
+
+      const map = new google.maps.Map(document.getElementById('map'), {
+        center: {
+          lat: 37.7749,
+          lng: -122.4194
+        },
+        zoom: 12,
+      });
+
+      const issues = < %= raw @issues.to_json % > ;
+
+      console.log("Issues data:", issues); // Log the issues passed to the map
+
+      if (issues && issues.length > 0) {
+        issues.forEach(issue => {
+          const marker = new google.maps.Marker({
+            position: {
+              lat: issue.latitude,
+              lng: issue.longitude
+            },
+            map: map,
+            title: issue.description,
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<h3>${issue.category}</h3><p>${issue.description}</p>`,
+          });
+
+          marker.addListener('click', function() {
+            infoWindow.open(map, marker);
+          });
+        });
+      } else {
+        console.log("No issues found to display on the map.");
+      }
+    };
+  </script>
+</body>
+
+</html>

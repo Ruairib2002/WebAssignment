@@ -1,6 +1,9 @@
 class GpsController < ApplicationController
   def index
-    @issues = Issue.all
+    @issues = Issue.select(:latitude, :longitude, :description, :category)
+
+    # Debugging log to verify issues are fetched correctly
+    Rails.logger.debug "Issues: #{@issues.inspect}"
   end
 
   def report_issue
