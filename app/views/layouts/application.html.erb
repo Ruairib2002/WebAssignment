@@ -15,8 +15,16 @@
   <!-- Include stylesheets -->
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-  <!-- Include Google Maps API Script -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWzmLk5ro9tUy_AjHdyoo3p8TYuE2R4QM&callback=initMap" async defer></script>
+  <!-- Include Google Maps API Script with Environment Variable for API Key -->
+  <script>
+    // Insert the Google API key into the script dynamically using an environment variable
+    const googleApiKey = "<%= ENV['GOOGLE_API_KEY'] %>";
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&callback=initMap`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
 </head>
 
 <body>
@@ -49,46 +57,17 @@
   <script>
     // Define initMap globally to make it accessible to Google Maps API
     window.initMap = function() {
-      // Initialize the map with a default center and zoom level
-      const map = new google.maps.Map(document.getElementById('map'), {
-        center: {
-          lat: 37.7749,
-          lng: -122.4194
-        }, // San Francisco as default center
-        zoom: 12,
-      });
-
-      // Inject the issues from the controller into the JavaScript
-      const issues = < %= raw @issues.to_json % > ; // Injected JSON
-
-      // Loop through each issue and add a marker to the map
-      issues.forEach(issue => {
-        new google.maps.Marker({
-          position: {
-            lat: issue.latitude,
-            lng: issue.longitude,
-          },
-          map: map,
-          title: issue.description,
-          icon: getIcon(issue.category),
+        // Initialize the map with a default center and zoom level
+        const map = new google.maps.Map(document.getElementById('map'), {
+          center: {
+            lat: 37.7749,
+            lng: -122.4194
+          }, // San Francisco as default center
+          zoom: 12,
         });
-      });
 
-      // Function to return different icons based on the issue category
-      function getIcon(category) {
-        switch (category.toLowerCase()) {
-          case 'roadwork':
-            return 'roadwork-icon.png'; // Ensure this path is correct
-          case 'police':
-            return 'police-icon.png'; // Ensure this path is correct
-          case 'accident':
-            return 'accident-icon.png'; // Ensure this path is correct
-          default:
-            return 'default-icon.png'; // Ensure this path is correct
-        }
-      }
-    };
-  </script>
-</body>
+        // Inject the issues from the controller into the JavaScript
+        const issues = < %= raw @issues.to_json % > ; // Injected JSON
 
-</html>
+        // Loop through each issue and add a marker to the map
+        issues.forEach(issue => {
