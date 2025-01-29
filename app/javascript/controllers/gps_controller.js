@@ -156,67 +156,52 @@ export default class extends Controller {
     const map = this.createMap();
     const markers = entities.map((entity) => {
       let title = entity.item_type ? `${entity.item_type}<br/>` : "";
-      title += `<a href="${entity.url}">${entity.name}</a>`;
-
-      return new google.maps.marker.AdvancedMarkerElement({
+      title += `<a href="${entity.url}">${entity.name}</a><br/>`;
+      let location = {
+        lat: parseFloat(entity.lat),
+        lng: parseFloat(entity.lng),
+      };
+      const marker = new google.maps.Marker({
+        position: location,
         map: map,
-        gmpClickable: true,
         title: title,
-        position: { lat: parseFloat(entity.coords.lat), lng: parseFloat(entity.coords.lng) },
-        content: new google.maps.marker.PinElement({
-          scale: 0.75,
-          glyph: "",
-          background: colorPair[0],
-          borderColor: colorPair[1]
-        }).element
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 7,
+          fillColor: colorPair[0],
+          fillOpacity: 0.6,
+          strokeColor: colorPair[1],
+          strokeWeight: 2,
+        }
       });
-    });
 
-    markers.forEach((marker) => {
       marker.addListener("click", () => {
-        this.infoWindow.close();
         this.infoWindow.setContent(marker.title);
         this.infoWindow.open(map, marker);
       });
+      return marker;
     });
+    return markers;
   }
 
   addLegend() {
     const legend = document.getElementById("legend");
+    if (!legend) return;
+    const map = this.createMap();
+    const div = document.createElement("div");
+    div.innerHTML = "<strong>Legend</strong>";
+    legend.appendChild(div);
 
-    // Clear existing legend content
-    legend.innerHTML = "";
-
-    const legendItems = [
-      { name: "Businesses", color: this.businessColorPair[0] },
-      { name: "People", color: this.peopleColorPair[0] }
-    ];
-
-    this.itemsValue.forEach((itemTypeData, index) => {
-      legendItems.push({ name: itemTypeData[0].substring(0, 20), color: this.colorPairs[index % this.numColors][0] });
+    this.colorPairs.forEach((colorPair, index) => {
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <div style="display: flex; align-items: center;">
+          <span style="background-color: ${colorPair[0]}; width: 20px; height: 20px; margin-right: 5px;"></span>
+          <span>${tt('.businesses')}</span>
+        </div>`;
+      legend.appendChild(div);
     });
 
-    legendItems.forEach(item => {
-      const legendItem = document.createElement("div");
-      legendItem.style.display = "flex";
-      legendItem.style.alignItems = "center";
-      legendItem.style.marginBottom = "5px";
-
-      const colorBox = document.createElement("span");
-      colorBox.style.backgroundColor = item.color;
-      colorBox.style.width = "20px";
-      colorBox.style.height = "20px";
-      colorBox.style.display = "inline-block";
-      colorBox.style.marginRight = "10px";
-
-      const labelText = document.createElement("span");
-      labelText.innerText = item.name;
-
-      legendItem.appendChild(colorBox);
-      legendItem.appendChild(labelText);
-      legend.appendChild(legendItem);
-    });
-
-    this.createMap().controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
   }
 }
