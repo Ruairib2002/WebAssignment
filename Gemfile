@@ -72,3 +72,5 @@ end
 gem "tailwindcss-rails", "~> 3.0"
 
 gem 'rails-erd'
+
+gem 'dotenv-rails', groups: [:development, :test]

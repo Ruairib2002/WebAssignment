@@ -15,6 +15,8 @@ class GpsController < ApplicationController
     end
   end
 
+  puts "Google API Key: #{ENV['GOOGLE_API_KEY']}"
+
   private
 
   def issue_params
