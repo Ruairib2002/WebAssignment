@@ -38,14 +38,12 @@
     <%= yield %>
   </main>
 
-  <h1>GPS Map</h1> <!-- This should remain visible in the header as it's the page title -->
+  <h1>GPS Map</h1>
 
   <div id="map" style="height: 500px; width: 100%;"></div>
 
   <script>
     window.initMap = function() {
-      console.log("Google Maps API initialized."); // Confirm that the map is being initialized
-
       const map = new google.maps.Map(document.getElementById('map'), {
         center: {
           lat: 37.7749,
@@ -55,8 +53,6 @@
       });
 
       const issues = < %= raw @issues.to_json % > ;
-
-      console.log("Issues data:", issues); // Log the issues passed to the map
 
       if (issues && issues.length > 0) {
         issues.forEach(issue => {
@@ -77,8 +73,6 @@
             infoWindow.open(map, marker);
           });
         });
-      } else {
-        console.log("No issues found to display on the map.");
       }
     };
   </script>
