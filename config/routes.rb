@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get 'gps/index'
+  get 'gps/new_route', to: 'gps#new_route', as: 'new_route'
   get "up" => "rails/health#show", as: :rails_health_check
 
   root to: 'home#index'
@@ -53,6 +54,7 @@ Rails.application.routes.draw do
     resources :groups, only: [:index, :show, :edit, :update, :destroy]
   end
 
+  resources :routes, only: [:create]
   resources :places, only: [:show]
   resources :issues
 end

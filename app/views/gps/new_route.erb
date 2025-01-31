@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>GPS Map</title>
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}&libraries=places" %>
+  <style>
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Select Locations</h1>
+
+  <form id="route-form">
+    <label for="from-place">From:</label>
+    <select id="from-place">
+      <option value="">Select a place</option>
+      <% @places.each do |place| %>
+      <option value="<%= place.id %>">
+        <%= place.name %>
+      </option>
+      <% end %>
+    </select>
+
+    <label for="to-place">To:</label>
+    <select id="to-place">
+      <option value="">Select a place</option>
+      <% @places.each do |place| %>
+      <option value="<%= place.id %>">
+        <%= place.name %>
+      </option>
+      <% end %>
+    </select>
+
+    <button type="button" onclick="loadRoute()">Show Route</button>
+  </form>
+
+  <br><br>
+  <button onclick="window.location.href='/gps/index'">Go to Index Page</button>
+
+  <script>
+    function loadRoute() {
+      const fromPlaceId = document.getElementById('from-place').value;
+      const toPlaceId = document.getElementById('to-place').value;
+
+      if (fromPlaceId && toPlaceId) {
+        alert(`Showing route from place ID: ${fromPlaceId} to place ID: ${toPlaceId}`);
+      } else {
+        alert('Please select both From and To places.');
+      }
+    }
+  </script>
+</body>
+
+</html>
