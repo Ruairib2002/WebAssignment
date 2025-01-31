@@ -1,18 +1,13 @@
-<!-- app/views/gps/index.html.erb -->
 <!DOCTYPE html>
 <html>
 
 <head>
   <title>GPS Map</title>
-  <!-- Include Google Maps API with your API key -->
   <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}&libraries=places" %>
   <style>
-    /* Style for the map container */
     #map {
       height: 500px;
-      /* Set the height of the map */
       width: 100%;
-      /* Make the map full-width */
     }
   </style>
 </head>
@@ -20,62 +15,83 @@
 <body>
   <h1>Google Map</h1>
 
-  <!-- Dropdown to select a place -->
-  <select id="place-dropdown" onchange="updateMapWithPlace()">
-    <option value="">Select a Place</option>
-    <% @issues.each do |issue| %>
-    <option value="<%= issue.id %>"><%= issue.category %> - <%= issue.description %></option>
-    <% end %>
-  </select>
+  <form id="route-form">
+    <label for="from-place">From:</label>
+    <select id="from-place" onchange="updateMapWithRoute()">
+      <option value="">Select a Place</option>
+      <% @places.each do |place| %>
+      <option value="<%= place.id %>"><%= place.name %></option>
+      <% end %>
+    </select>
 
-  <!-- The div where the map will be displayed -->
+    <label for="to-place">To:</label>
+    <select id="to-place" onchange="updateMapWithRoute()">
+      <option value="">Select a Place</option>
+      <% @places.each do |place| %>
+      <option value="<%= place.id %>"><%= place.name %></option>
+      <% end %>
+    </select>
+  </form>
+
   <div id="map"></div>
 
   <script>
     let map;
+    let directionsService;
+    let directionsRenderer;
 
     function initMap() {
-      // Set default location (e.g., San Francisco coordinates)
       var mapOptions = {
         center: {
           lat: 37.7749,
           lng: -122.4194
-        }, // Example: San Francisco coordinates
+        },
         zoom: 12
       };
 
       map = new google.maps.Map(document.getElementById('map'), mapOptions);
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer.setMap(map);
     }
 
-    function updateMapWithPlace() {
-      var placeId = document.getElementById('place-dropdown').value;
-      if (placeId) {
-        fetch(`/issues/${placeId}`)
+    function updateMapWithRoute() {
+      var fromPlaceId = document.getElementById('from-place').value;
+      var toPlaceId = document.getElementById('to-place').value;
+
+      if (fromPlaceId && toPlaceId) {
+        fetch(`/places/${fromPlaceId}`)
           .then(response => response.json())
-          .then(data => {
-            const {
-              latitude,
-              longitude,
-              description,
-              category
-            } = data;
-            const position = {
-              lat: latitude,
-              lng: longitude
+          .then(fromData => {
+            const fromPosition = {
+              lat: fromData.latitude,
+              lng: fromData.longitude
             };
 
-            // Center the map at the selected place and add a marker
-            map.setCenter(position);
-            new google.maps.Marker({
-              position: position,
-              map: map,
-              title: `${category}: ${description}`
-            });
+            fetch(`/places/${toPlaceId}`)
+              .then(response => response.json())
+              .then(toData => {
+                const toPosition = {
+                  lat: toData.latitude,
+                  lng: toData.longitude
+                };
+
+                const request = {
+                  origin: fromPosition,
+                  destination: toPosition,
+                  travelMode: google.maps.TravelMode.DRIVING
+                };
+
+                directionsService.route(request, function(result, status) {
+                  if (status == google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                  }
+                });
+              });
           });
       }
     }
 
-    // Initialize the map when the page loads
     google.maps.event.addDomListener(window, 'load', initMap);
   </script>
 </body>

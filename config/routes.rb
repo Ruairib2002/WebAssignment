@@ -53,6 +53,6 @@ Rails.application.routes.draw do
     resources :groups, only: [:index, :show, :edit, :update, :destroy]
   end
 
-  # Add the following line for issues resource:
+  resources :places, only: [:show]
   resources :issues
 end
