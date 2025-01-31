@@ -13,47 +13,131 @@
 </head>
 
 <body>
-  <h1>Select Locations</h1>
+  <h1>Place Markers on the Map</h1>
 
   <form id="route-form">
-    <label for="from-place">From:</label>
-    <select id="from-place">
-      <option value="">Select a place</option>
-      <% @places.each do |place| %>
-      <option value="<%= place.id %>">
-        <%= place.name %>
-      </option>
-      <% end %>
-    </select>
+    <p>Click on the map to place a marker at your location or destination. Drag them if needed.</p>
+    <br>
 
-    <label for="to-place">To:</label>
-    <select id="to-place">
-      <option value="">Select a place</option>
-      <% @places.each do |place| %>
-      <option value="<%= place.id %>">
-        <%= place.name %>
-      </option>
-      <% end %>
-    </select>
+    <label for="from-name">From Location Name:</label>
+    <input type="text" id="from-name" placeholder="Enter from location name" disabled>
+    <br>
 
-    <button type="button" onclick="loadRoute()">Show Route</button>
+    <label for="to-name">To Location Name:</label>
+    <input type="text" id="to-name" placeholder="Enter to location name" disabled>
+    <br><br>
+
+    <button type="button" onclick="saveLocations()">Save Locations</button>
   </form>
 
   <br><br>
   <button onclick="window.location.href='/gps/index'">Go to Index Page</button>
 
-  <script>
-    function loadRoute() {
-      const fromPlaceId = document.getElementById('from-place').value;
-      const toPlaceId = document.getElementById('to-place').value;
+  <div id="map"></div>
 
-      if (fromPlaceId && toPlaceId) {
-        alert(`Showing route from place ID: ${fromPlaceId} to place ID: ${toPlaceId}`);
+  <script>
+    let map;
+    let fromMarker;
+    let toMarker;
+    let fromPosition = null;
+    let toPosition = null;
+
+    function initMap() {
+      const mapOptions = {
+        center: { lat: 37.7749, lng: -122.4194 },
+        zoom: 12
+      };
+
+      map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+      map.addListener('click', function(event) {
+        placeMarker(event.latLng);
+      });
+    }
+
+    function placeMarker(location) {
+      if (!fromMarker) {
+        fromMarker = new google.maps.Marker({
+          position: location,
+          map: map,
+          title: 'From Location',
+          draggable: true
+        });
+        fromPosition = location;
+
+        document.getElementById('from-name').disabled = false;
+
+        fromMarker.addListener('dragend', function(event) {
+          fromPosition = event.latLng;
+        });
+
+      } else if (!toMarker) {
+        toMarker = new google.maps.Marker({
+          position: location,
+          map: map,
+          title: 'To Location',
+          draggable: true
+        });
+        toPosition = location;
+
+        document.getElementById('to-name').disabled = false;
+
+        toMarker.addListener('dragend', function(event) {
+          toPosition = event.latLng;
+        });
+
       } else {
-        alert('Please select both From and To places.');
+        alert("Both markers have been placed.");
       }
     }
+
+    function saveLocations() {
+      if (fromPosition && toPosition) {
+        const fromLat = fromPosition.lat();
+        const fromLng = fromPosition.lng();
+        const toLat = toPosition.lat();
+        const toLng = toPosition.lng();
+
+        const fromName = document.getElementById('from-name').value.trim();
+        const toName = document.getElementById('to-name').value.trim();
+
+        if (!fromName || !toName) {
+          alert("Please enter names for both locations.");
+          return;
+        }
+
+        fetch('/places', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            places: [
+              { name: fromName, latitude: fromLat, longitude: fromLng },
+              { name: toName, latitude: toLat, longitude: toLng }
+            ]
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert("Locations saved successfully!");
+          } else {
+            alert("Error saving locations.");
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Error saving locations.");
+        });
+      } else {
+        alert("Please place both markers on the map.");
+      }
+    }
+
+    google.maps.event.addDomListener(window, 'load', initMap);
   </script>
+
 </body>
 
 </html>
