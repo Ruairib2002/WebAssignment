@@ -79,12 +79,22 @@
                 const request = {
                   origin: fromPosition,
                   destination: toPosition,
-                  travelMode: google.maps.TravelMode.DRIVING
+                  travelMode: google.maps.TravelMode.DRIVING,
+                  provideRouteAlternatives: true
                 };
 
                 directionsService.route(request, function(result, status) {
                   if (status == google.maps.DirectionsStatus.OK) {
-                    directionsRenderer.setDirections(result);
+                    directionsRenderer.setDirections(null);
+                    result.routes.forEach((route, index) => {
+                      const renderer = new google.maps.DirectionsRenderer({
+                        map: map,
+                        directions: result,
+                        routeIndex: index
+                      });
+                    });
+                  } else {
+                    alert("Could not fetch routes. Please try again.");
                   }
                 });
               });

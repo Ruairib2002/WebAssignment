@@ -1,10 +1,8 @@
 import { Controller } from "@hotwired/stimulus";
 
-// GPS controller class
 export default class extends Controller {
   static targets = ["map", "lat", "lng"];
 
-  // Color pairs for various markers
   businessColorPair = ["#0d6efd", "#0a58ca"];
   peopleColorPair = ["#198754", "#146c43"];
   colorPairs = [
@@ -19,7 +17,6 @@ export default class extends Controller {
   ];
   numColors = this.colorPairs.length;
 
-  // Stimulus values
   static values = {
     lat: Number,
     lng: Number,
@@ -36,7 +33,6 @@ export default class extends Controller {
     }
   }
 
-  // Main map initialization
   initMap() {
     this.createMap();
     if (this.hasRadiusValue) {
@@ -44,7 +40,6 @@ export default class extends Controller {
     }
     this.createMarker();
 
-    // Add markers for businesses, people, and items if provided
     if (this.hasBusinessesValue) {
       this.addMarkersForEntities(this.businessesValue, this.businessColorPair);
     }
@@ -57,18 +52,15 @@ export default class extends Controller {
       });
     }
 
-    // Add legend if necessary
     if (this.hasBusinessesValue || this.hasPeopleValue || this.hasItemsValue) {
       this.addLegend();
     }
   }
 
-  // Create the map with initial coordinates
   createMap() {
     let lat = parseFloat(this.latTarget.value);
     let lng = parseFloat(this.lngTarget.value);
 
-    // Use the provided values if the targets are empty
     if (isNaN(lat) || this.latTarget.value.trim() === "") {
       lat = this.latValue;
     }
@@ -89,13 +81,11 @@ export default class extends Controller {
     return this._map;
   }
 
-  // Calculate zoom level based on distance (meters)
   calculateZoom(lat, meters) {
     const zoom = Math.log2((450 * 156543.03392 * Math.cos(lat * Math.PI / 180)) / meters);
     return Math.floor(zoom);
   }
 
-  // Create a circle on the map
   createCircle() {
     if (!this._circle) {
       const map = this.createMap();
@@ -118,7 +108,6 @@ export default class extends Controller {
     return this._circle;
   }
 
-  // Create a marker for the user's current location
   createMarker() {
     let lat = parseFloat(this.latTarget.value);
     let lng = parseFloat(this.lngTarget.value);
@@ -146,7 +135,6 @@ export default class extends Controller {
       });
     }
 
-    // Update the circle's position if the marker is dragged
     if (this.hasRadiusValue) {
       this._marker.addListener('drag', () => {
         const position = this._marker.position;
@@ -154,7 +142,6 @@ export default class extends Controller {
       });
     }
 
-    // Update the lat and lng targets when the marker is dragged
     this._marker.addListener('dragend', () => {
       const position = this._marker.position;
       this.latTarget.value = parseFloat(position.lat).toFixed(5);
@@ -164,7 +151,6 @@ export default class extends Controller {
     return this._marker;
   }
 
-  // Add markers for businesses, people, or items
   addMarkersForEntities(entities, colorPair) {
     const map = this.createMap();
     const markers = entities.map((entity) => {
@@ -188,7 +174,6 @@ export default class extends Controller {
         },
       });
 
-      // Add event listener to show info window on click
       marker.addListener("click", () => {
         this.infoWindow.setContent(marker.title);
         this.infoWindow.open(map, marker);
@@ -198,7 +183,6 @@ export default class extends Controller {
     return markers;
   }
 
-  // Add a legend to the map
   addLegend() {
     const legend = document.getElementById("legend");
     if (!legend) return;
@@ -207,7 +191,6 @@ export default class extends Controller {
     div.innerHTML = "<strong>Legend</strong>";
     legend.appendChild(div);
 
-    // Add a color legend for each color pair
     this.colorPairs.forEach((colorPair, index) => {
       const div = document.createElement("div");
       div.innerHTML = `
