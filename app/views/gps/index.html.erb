@@ -1,80 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WebAssignment - GPS</title>
-
-  <%= csrf_meta_tags %>
-  <%= csp_meta_tag %>
-
-  <%= javascript_importmap_tags %>
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-
-  <script>
-    const googleApiKey = "<%= ENV['GOOGLE_API_KEY'] %>";
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&callback=initMap`;
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-  </script>
+  <title>GPS Map</title>
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&libraries=places" %>
+  <style>
+    /* Style for the map container */
+    #map {
+      height: 500px;
+      /* Set the height of the map */
+      width: 100%;
+      /* Make the map full-width */
+    }
+  </style>
 </head>
 
 <body>
-  <div class="flash-messages">
-    <% if notice %>
-    <div class="alert alert-success"><%= notice %></div>
-    <% end %>
-    <% if alert %>
-    <div class="alert alert-danger"><%= alert %></div>
-    <% end %>
-  </div>
-
-  <%= render 'layouts/sidebar' %>
-
-  <main class="container mx-auto mt-28 px-5 flex">
-    <%= yield %>
-  </main>
-
-  <h1>GPS Map</h1>
-
-  <div id="map" style="height: 500px; width: 100%;"></div>
+  <h1>Google Map</h1>
+  <div id="map"></div> <!-- The div where the map will be displayed -->
 
   <script>
-    window.initMap = function() {
-      const map = new google.maps.Map(document.getElementById('map'), {
+    function initMap() {
+      // Define the location you want the map to focus on
+      var mapOptions = {
         center: {
           lat: 37.7749,
           lng: -122.4194
-        },
-        zoom: 12,
-      });
+        }, // Example: San Francisco coordinates
+        zoom: 12
+      };
 
-      const issues = < %= raw @issues.to_json % > ;
+      // Create a map instance and bind it to the #map div
+      var map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    }
 
-      if (issues && issues.length > 0) {
-        issues.forEach(issue => {
-          const marker = new google.maps.Marker({
-            position: {
-              lat: issue.latitude,
-              lng: issue.longitude
-            },
-            map: map,
-            title: issue.description,
-          });
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `<h3>${issue.category}</h3><p>${issue.description}</p>`,
-          });
-
-          marker.addListener('click', function() {
-            infoWindow.open(map, marker);
-          });
-        });
-      }
-    };
+    // Initialize the map when the page loads
+    google.maps.event.addDomListener(window, 'load', initMap);
   </script>
 </body>
 

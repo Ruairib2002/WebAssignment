@@ -11,3 +11,4 @@ pin "gps_controller", to: "controllers/gps_controller.js"
 
 # Pin all controllers from the controllers directory
 pin_all_from "app/javascript/controllers", under: "controllers"
+pin "stimulus", to: "stimulus.js"
