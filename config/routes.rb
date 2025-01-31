@@ -55,6 +55,6 @@ Rails.application.routes.draw do
   end
 
   resources :routes, only: [:create]
-  resources :places, only: [:show]
+  resources :places, only: [:show, :create]
   resources :issues
 end

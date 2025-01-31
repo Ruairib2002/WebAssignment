@@ -1,10 +1,10 @@
 class GpsController < ApplicationController
   def index
-    @places = Place.all
+    @places = Place.order(:name)
   end
 
   def new_route
-    @places = Place.all
+    @places = Place.order(:name)
   end
 
   def save_place
