@@ -1,5 +1,7 @@
+# app/controllers/gps_controller.rb
 class GpsController < ApplicationController
   def index
+    # Fetching issues with latitude, longitude, description, and category
     @issues = Issue.select(:latitude, :longitude, :description, :category)
 
     # Debugging log to verify issues are fetched correctly
@@ -15,10 +17,9 @@ class GpsController < ApplicationController
     end
   end
 
-  puts "Google API Key: #{ENV['GOOGLE_API_KEY']}"
-
   private
 
+  # Strong parameters for reporting an issue
   def issue_params
     params.require(:issue).permit(:latitude, :longitude, :description, :category)
   end

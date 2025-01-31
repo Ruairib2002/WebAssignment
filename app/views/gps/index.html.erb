@@ -1,9 +1,11 @@
+<!-- app/views/gps/index.html.erb -->
 <!DOCTYPE html>
 <html>
 
 <head>
   <title>GPS Map</title>
-  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&libraries=places" %>
+  <!-- Include Google Maps API with your API key -->
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}&libraries=places" %>
   <style>
     /* Style for the map container */
     #map {
@@ -17,11 +19,23 @@
 
 <body>
   <h1>Google Map</h1>
-  <div id="map"></div> <!-- The div where the map will be displayed -->
+
+  <!-- Dropdown to select a place -->
+  <select id="place-dropdown" onchange="updateMapWithPlace()">
+    <option value="">Select a Place</option>
+    <% @issues.each do |issue| %>
+    <option value="<%= issue.id %>"><%= issue.category %> - <%= issue.description %></option>
+    <% end %>
+  </select>
+
+  <!-- The div where the map will be displayed -->
+  <div id="map"></div>
 
   <script>
+    let map;
+
     function initMap() {
-      // Define the location you want the map to focus on
+      // Set default location (e.g., San Francisco coordinates)
       var mapOptions = {
         center: {
           lat: 37.7749,
@@ -30,8 +44,35 @@
         zoom: 12
       };
 
-      // Create a map instance and bind it to the #map div
-      var map = new google.maps.Map(document.getElementById('map'), mapOptions);
+      map = new google.maps.Map(document.getElementById('map'), mapOptions);
+    }
+
+    function updateMapWithPlace() {
+      var placeId = document.getElementById('place-dropdown').value;
+      if (placeId) {
+        fetch(`/issues/${placeId}`)
+          .then(response => response.json())
+          .then(data => {
+            const {
+              latitude,
+              longitude,
+              description,
+              category
+            } = data;
+            const position = {
+              lat: latitude,
+              lng: longitude
+            };
+
+            // Center the map at the selected place and add a marker
+            map.setCenter(position);
+            new google.maps.Marker({
+              position: position,
+              map: map,
+              title: `${category}: ${description}`
+            });
+          });
+      }
     }
 
     // Initialize the map when the page loads
