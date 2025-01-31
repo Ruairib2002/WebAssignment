@@ -35,7 +35,6 @@
 
   <div id="map"></div>
 
-  <!-- Button to navigate to the 'new_route' page -->
   <br><br>
   <button onclick="window.location.href='/gps/new_route'">Go to New Route Page</button>
 
@@ -47,8 +46,8 @@
     function initMap() {
       var mapOptions = {
         center: {
-          lat: 37.7749,
-          lng: -122.4194
+          lat: 54.4231,
+          lng: -6.4446
         },
         zoom: 12
       };
@@ -91,7 +90,7 @@
                   if (status == google.maps.DirectionsStatus.OK) {
                     directionsRenderer.setDirections(null);
                     result.routes.forEach((route, index) => {
-                      const renderer = new google.maps.DirectionsRenderer({
+                      new google.maps.DirectionsRenderer({
                         map: map,
                         directions: result,
                         routeIndex: index

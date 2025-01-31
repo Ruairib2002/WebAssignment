@@ -44,7 +44,7 @@
 
     function initMap() {
       const mapOptions = {
-        center: { lat: 37.7749, lng: -122.4194 },
+        center: { lat: 54.4231, lng: -6.4446 },
         zoom: 12
       };
 
@@ -64,7 +64,6 @@
           draggable: true
         });
         fromPosition = location;
-
         document.getElementById('from-name').disabled = false;
 
         fromMarker.addListener('dragend', function(event) {
@@ -79,7 +78,6 @@
           draggable: true
         });
         toPosition = location;
-
         document.getElementById('to-name').disabled = false;
 
         toMarker.addListener('dragend', function(event) {
