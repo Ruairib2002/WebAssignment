@@ -38,6 +38,22 @@
       font-size: 0.9em;
       color: gray;
     }
+
+    /* Style for the button */
+    .btn {
+      display: inline-block;
+      padding: 10px 15px;
+      margin-top: 20px;
+      background-color: #007bff;
+      color: white;
+      text-align: center;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 
@@ -55,6 +71,9 @@
     <h2>Active Issues</h2>
     <div id="issues-container"></div>
   </div>
+
+  <!-- Button to resolve issues -->
+  <a href="<%= resolve_all_issues_path %>" class="btn">Resolve Issues</a>
 
   <script>
     let map;
