@@ -28,8 +28,6 @@
     let destinationMarker;
     let originPosition;
     let destinationPosition;
-    let places = [];  // Array to hold the places
-    let issueMarkers = [];  // Array to hold the issue markers
     let issuePositions = [];  // Array to hold the positions of issues (for avoiding in the route)
 
     function initMap() {
@@ -46,22 +44,35 @@
       directionsRenderer = new google.maps.DirectionsRenderer();
       directionsRenderer.setMap(map);
 
-      // Fetch places and issues from the server
-      fetch('/places.json')  // Adjust the URL if needed
-        .then(response => response.json())
-        .then(data => {
-          places = data;  // Store the places from the server
-          addMarkers();   // Add markers for places
-        })
-        .catch(error => console.error('Error fetching places:', error));
-
       // Fetch active issues from the server and add markers for them
       fetch('/issues/active.json')  // Adjust the route if needed
         .then(response => response.json())
         .then(issues => {
-          addIssueMarkers(issues);   // Add markers for issues
           issues.forEach(issue => {
-            issuePositions.push(new google.maps.LatLng(issue.latitude, issue.longitude));
+            const position = new google.maps.LatLng(issue.latitude, issue.longitude);
+            issuePositions.push(position);  // Store positions of issues
+
+            // Create red markers for issues
+            const issueIcon = {
+              url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+              scaledSize: new google.maps.Size(32, 32),
+            };
+
+            const issueMarker = new google.maps.Marker({
+              position: position,
+              map: map,
+              title: issue.category,
+              icon: issueIcon  // Red color for issue markers
+            });
+
+            // Add InfoWindow for the issue markers
+            const infoWindow = new google.maps.InfoWindow({
+              content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
+            });
+
+            issueMarker.addListener('click', function () {
+              infoWindow.open(map, issueMarker);
+            });
           });
         })
         .catch(error => console.error('Error fetching issues:', error));
@@ -70,9 +81,8 @@
       originMarker = null;
       destinationMarker = null;
 
-      // Add click event listener for map
-      map.addListener('click', function(event) {
-        // If no origin marker, set origin
+      // Add click event listener for map to set origin and destination
+      map.addListener('click', function (event) {
         if (!originMarker) {
           originMarker = new google.maps.Marker({
             position: event.latLng,
@@ -83,7 +93,6 @@
           });
           originPosition = event.latLng;
         } else if (!destinationMarker) {
-          // If origin is set, set destination marker
           destinationMarker = new google.maps.Marker({
             position: event.latLng,
             map: map,
@@ -99,14 +108,14 @@
       });
 
       // If marker is dragged, recalculate route
-      google.maps.event.addListener(originMarker, 'dragend', function() {
+      google.maps.event.addListener(originMarker, 'dragend', function () {
         originPosition = originMarker.getPosition();
         if (destinationPosition) {
           calculateRoute();
         }
       });
 
-      google.maps.event.addListener(destinationMarker, 'dragend', function() {
+      google.maps.event.addListener(destinationMarker, 'dragend', function () {
         destinationPosition = destinationMarker.getPosition();
         if (originPosition) {
           calculateRoute();
@@ -114,84 +123,39 @@
       });
     }
 
-    // Function to add markers for places
-    function addMarkers() {
-      places.forEach(place => {
-        const position = new google.maps.LatLng(place.latitude, place.longitude);
-
-        // Create a marker for each place
-        const marker = new google.maps.Marker({
-          position: position,
-          map: map,
-          title: place.name // Marker title is the place name
-        });
-
-        // Optional: Add an InfoWindow to show the place name when clicking the marker
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<div><strong>${place.name}</strong><br>Latitude: ${place.latitude}<br>Longitude: ${place.longitude}</div>`
-        });
-
-        marker.addListener('click', function() {
-          infoWindow.open(map, marker);
-        });
-      });
-    }
-
-    // Function to add markers for issues (with red color to distinguish them)
-    function addIssueMarkers(issues) {
-      issues.forEach(issue => {
-        const position = new google.maps.LatLng(issue.latitude, issue.longitude);
-
-        // Create a custom icon for issue markers (make them red)
-        const issueIcon = {
-          url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-          scaledSize: new google.maps.Size(32, 32),  // Adjust size if needed
-        };
-
-        // Create a marker for each issue with a red icon
-        const issueMarker = new google.maps.Marker({
-          position: position,
-          map: map,
-          title: issue.category, // Marker title is the issue category
-          icon: issueIcon  // Use red icon for issue markers
-        });
-
-        // Add an InfoWindow to show more info when clicking the marker
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
-        });
-
-        issueMarker.addListener('click', function() {
-          infoWindow.open(map, issueMarker);
-        });
-
-        // Store the issue marker's position for route avoidance
-        issuePositions.push(position);
-      });
-    }
-
     // Function to calculate the route between origin and destination, avoiding issues
     function calculateRoute() {
       if (originPosition && destinationPosition) {
-        // Create waypoints for the issues
+        // Create waypoints for each issue position
         const waypoints = issuePositions.map(position => ({
           location: position,
-          stopover: true
+          stopover: false  // Do not stop at these points, just use them to avoid
         }));
+
+        // Create a detour effect by adding waypoints around the issue markers
+        const detourWaypoints = [];
+        issuePositions.forEach(position => {
+          // Slightly offset the waypoints from the issue marker to create a detour effect
+          const detourPoint = google.maps.geometry.spherical.computeOffset(position, 500, 90); // 500 meters away to the east (90 degrees)
+          detourWaypoints.push({ location: detourPoint, stopover: false });
+        });
+
+        // Combine original waypoints with detour waypoints
+        const allWaypoints = [...waypoints, ...detourWaypoints];
 
         const request = {
           origin: originPosition,
           destination: destinationPosition,
-          waypoints: waypoints,  // Add the issue waypoints
+          waypoints: allWaypoints,  // Add the waypoints to the route
           travelMode: google.maps.TravelMode.DRIVING,
-          optimizeWaypoints: true,  // Optimize the waypoints order to avoid issues
+          optimizeWaypoints: true,  // Optimize the waypoints order to avoid issues and select the best route
           avoidFerries: true,
           avoidHighways: true,
           avoidTolls: true
         };
 
-        directionsService.route(request, function(result, status) {
-          if (status == google.maps.DirectionsStatus.OK) {
+        directionsService.route(request, function (result, status) {
+          if (status === google.maps.DirectionsStatus.OK) {
             directionsRenderer.setDirections(result);
           } else {
             alert("Could not fetch routes. Please try again.");
