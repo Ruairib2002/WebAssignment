@@ -73,4 +73,5 @@ gem "tailwindcss-rails", "~> 3.0"
 
 gem 'rails-erd'
 
+gem 'dotenv', '~> 3.1', require: 'dotenv/load'
 gem 'dotenv-rails', groups: [:development, :test]

@@ -3,7 +3,7 @@
 
 <head>
   <title>GPS Map</title>
-  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_API_KEY']}&libraries=places" %>
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places" %>
   <style>
     #map {
       height: 500px;
@@ -46,7 +46,7 @@
     function initMap() {
       var mapOptions = {
         center: {
-          lat: 54.4231,
+          lat: 54.4231, // Adjust this to a suitable default location
           lng: -6.4446
         },
         zoom: 12
@@ -100,7 +100,11 @@
                     alert("Could not fetch routes. Please try again.");
                   }
                 });
+              }).catch(() => {
+                alert("Error fetching 'To' place data.");
               });
+          }).catch(() => {
+            alert("Error fetching 'From' place data.");
           });
       }
     }
