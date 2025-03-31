@@ -66,6 +66,7 @@
     let issuePositions = [];
     let currentRoutes = []; // Store all the routes for later interaction
     let currentOptimalRouteIndex = null;
+    let geocoder;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -74,6 +75,7 @@
       });
 
       directionsService = new google.maps.DirectionsService();
+      geocoder = new google.maps.Geocoder();  // Initialize geocoder
 
       // Fetch active issues and plot them on the map
       fetch('/issues/active.json')
@@ -83,13 +85,32 @@
             const position = new google.maps.LatLng(issue.latitude, issue.longitude);
             issuePositions.push(position);
 
-            new google.maps.Marker({
-              position: position,
-              map: map,
-              title: issue.category,
-              icon: {
-                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                scaledSize: new google.maps.Size(32, 32),
+            // Geocode the issue position to get the road name or address
+            geocoder.geocode({ location: position }, function(results, status) {
+              if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                const address = results[0].formatted_address;
+
+                // Create a marker for the issue
+                const marker = new google.maps.Marker({
+                  position: position,
+                  map: map,
+                  title: `Issue: ${address}`, // Title with address
+                  icon: {
+                    url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                    scaledSize: new google.maps.Size(32, 32),
+                  }
+                });
+
+                // Add an info window to display the address when clicked
+                const infoWindow = new google.maps.InfoWindow({
+                  content: `<h3>${issue.category}</h3><p>${address}</p>`
+                });
+
+                marker.addListener('click', () => {
+                  infoWindow.open(map, marker);
+                });
+              } else {
+                console.error('Geocode failed: ' + status);
               }
             });
           });
