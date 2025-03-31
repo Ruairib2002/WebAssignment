@@ -1,4 +1,8 @@
 class IssuesController < ApplicationController
+  def index
+    @issues = Issue.all
+  end
+
   def new
     @issue = Issue.new(latitude: params[:latitude], longitude: params[:longitude])
   end
@@ -10,6 +14,11 @@ class IssuesController < ApplicationController
     else
       render :new
     end
+  end
+
+  def active
+    @issues = Issue.where(active: true)
+    render json: @issues
   end
 
   private

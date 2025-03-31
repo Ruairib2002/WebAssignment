@@ -21,10 +21,20 @@ export default class extends Controller {
         .then(issues => {
           issues.forEach(issue => {
             const issuePosition = new google.maps.LatLng(issue.latitude, issue.longitude);
-            new google.maps.Marker({
+            const marker = new google.maps.Marker({
               position: issuePosition,
               map: this._map,
-              title: issue.issue_type // Display the issue type as the title of the marker
+              title: issue.category // Use the category as the title of the marker
+            });
+
+            // Add an InfoWindow to the marker to display more details when clicked
+            const infoWindow = new google.maps.InfoWindow({
+              content: `<div><strong>Category:</strong> ${issue.category}<br>
+                        <strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
+            });
+
+            marker.addListener("click", () => {
+              infoWindow.open(this._map, marker);
             });
           });
         });
@@ -44,7 +54,7 @@ export default class extends Controller {
     const mapOptions = {
       center: center,
       zoom: 14,
-      mapId: "locations", // Make sure this map ID is valid or remove it if not needed
+      mapId: "locations", // Ensure this map ID is valid or remove if not needed
     };
 
     if (!this._map) {
@@ -100,13 +110,13 @@ export default class extends Controller {
 
   submitIssue(event) {
     event.preventDefault();
-    const issueType = this.issueTypeTarget.value;
+    const issueCategory = this.issueTypeTarget.value;
     const latitude = this.issueFormTarget.querySelector("#latitude").value;
     const longitude = this.issueFormTarget.querySelector("#longitude").value;
 
     const issueData = {
       issue: {
-        issue_type: issueType,
+        category: issueCategory,
         latitude: latitude,
         longitude: longitude,
       }
@@ -139,10 +149,19 @@ export default class extends Controller {
   addIssueMarker(issue) {
     const issuePosition = new google.maps.LatLng(issue.latitude, issue.longitude);
 
-    new google.maps.Marker({
+    const marker = new google.maps.Marker({
       position: issuePosition,
       map: this._map,
-      title: issue.issue_type,  // Set the title to the issue type for identification
+      title: issue.category,  // Set the title to the issue category for identification
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: `<div><strong>Category:</strong> ${issue.category}<br>
+                <strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(this._map, marker);
     });
   }
 }

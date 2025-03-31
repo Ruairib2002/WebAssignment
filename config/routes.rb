@@ -58,5 +58,10 @@ Rails.application.routes.draw do
   resources :routes, only: [:create]
   resources :places, only: [:show]
   resources :places, only: [:show, :create]
-  resources :issues
+
+  resources :issues do
+    collection do
+      get 'active', to: 'issues#active'
+    end
+  end
 end

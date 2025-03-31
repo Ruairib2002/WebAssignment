@@ -9,6 +9,35 @@
       height: 500px;
       width: 100%;
     }
+
+    /* Style for the issue list box */
+    #issue-list {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      max-height: 300px;
+      overflow-y: scroll;
+    }
+
+    .issue-item {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .issue-item:last-child {
+      border-bottom: none;
+    }
+
+    .issue-category {
+      font-weight: bold;
+    }
+
+    .issue-coordinates {
+      font-size: 0.9em;
+      color: gray;
+    }
   </style>
 </head>
 
@@ -21,13 +50,20 @@
   <!-- Map container -->
   <div id="map"></div>
 
+  <!-- Box for displaying active issues -->
+  <div id="issue-list">
+    <h2>Active Issues</h2>
+    <div id="issues-container"></div>
+  </div>
+
   <script>
     let map;
     let marker;
     let issueLatitude;
     let issueLongitude;
-    const markerExpirationTime = 60 * 1000;
+    const markerExpirationTime = 60 * 1000; // 1 minute for marker expiration
 
+    // This function initializes the map and adds existing issues as markers
     function initMap() {
       // Map initialization with a default center
       const mapOptions = {
@@ -40,6 +76,39 @@
 
       map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
+      // Fetch existing active issues from the server (make sure your server provides this)
+      fetch('/issues/active.json') // Fixed route for active issues
+        .then(response => response.json())
+        .then(issues => {
+          // Display the issues in the list
+          displayIssues(issues);
+
+          // Create markers for each issue
+          issues.forEach(issue => {
+            const position = new google.maps.LatLng(issue.latitude, issue.longitude);
+
+            // Create a marker for each issue
+            const issueMarker = new google.maps.Marker({
+              position: position,
+              map: map,
+              title: issue.category, // Marker title is the issue category
+            });
+
+            // Add an InfoWindow to display more info when clicking the marker
+            const infoWindow = new google.maps.InfoWindow({
+              content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
+            });
+
+            issueMarker.addListener('click', function() {
+              infoWindow.open(map, issueMarker);
+            });
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching issues:', error);
+        });
+
+      // Add click listener to place a marker for creating new issues
       map.addListener('click', function(event) {
         // Remove any existing marker
         if (marker) {
@@ -66,6 +135,26 @@
       } else {
         alert("Please click on the map to place the marker first.");
       }
+    }
+
+    // Function to display the issues under the map in the issue list
+    function displayIssues(issues) {
+      const issuesContainer = document.getElementById('issues-container');
+      issuesContainer.innerHTML = '';
+
+      issues.forEach(issue => {
+        if (issue.active) {
+          const issueItem = document.createElement('div');
+          issueItem.classList.add('issue-item');
+
+          issueItem.innerHTML = `
+            <div class="issue-category">${issue.category}</div>
+            <div class="issue-coordinates">Latitude: ${issue.latitude}, Longitude: ${issue.longitude}</div>
+          `;
+
+          issuesContainer.appendChild(issueItem);
+        }
+      });
     }
 
     google.maps.event.addDomListener(window, 'load', initMap);
