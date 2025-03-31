@@ -25,11 +25,22 @@
     #route-table th {
       background-color: #f2f2f2;
     }
+
+    #buttons {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
   </style>
 </head>
 
 <body>
-  <h1>GPS Map with Dynamic Route Coloring</h1>
+  <h1>GPS Map</h1>
   <div id="map"></div>
 
   <table id="route-table">
@@ -42,6 +53,10 @@
     </thead>
     <tbody id="route-table-body"></tbody>
   </table>
+
+  <div id="buttons">
+    <button onclick="window.location.href='/issues'">View All Issues</button>
+  </div>
 
   <script>
     let map, directionsService;
