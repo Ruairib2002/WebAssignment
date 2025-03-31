@@ -3,7 +3,7 @@
 
 <head>
   <title>GPS Map with Markers</title>
-  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places" %>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places,geometry"></script>
   <style>
     #map {
       height: 500px;
@@ -14,157 +14,115 @@
 
 <body>
   <h1>Google Map with Markers</h1>
-
   <div id="map"></div>
 
   <br><br>
   <button onclick="window.location.href='/gps/new_route'">Go to New Route Page</button>
 
   <script>
-    let map;
-    let directionsService;
-    let directionsRenderer;
-    let originMarker;
-    let destinationMarker;
-    let originPosition;
-    let destinationPosition;
-    let issuePositions = [];  // Array to hold the positions of issues (for avoiding in the route)
+    let map, directionsService, directionsRenderer;
+    let originMarker, destinationMarker;
+    let originPosition, destinationPosition;
+    let issuePositions = [];
 
     function initMap() {
-      var mapOptions = {
-        center: {
-          lat: 54.4231, // Default location, adjust as needed
-          lng: -6.4446
-        },
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 54.4231, lng: -6.4446 },
         zoom: 12
-      };
+      });
 
-      map = new google.maps.Map(document.getElementById('map'), mapOptions);
       directionsService = new google.maps.DirectionsService();
-      directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: false });
       directionsRenderer.setMap(map);
 
-      // Fetch active issues from the server and add markers for them
-      fetch('/issues/active.json')  // Adjust the route if needed
+      fetch('/issues/active.json')
         .then(response => response.json())
         .then(issues => {
           issues.forEach(issue => {
             const position = new google.maps.LatLng(issue.latitude, issue.longitude);
-            issuePositions.push(position);  // Store positions of issues
+            issuePositions.push(position);
 
-            // Create red markers for issues
-            const issueIcon = {
-              url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-              scaledSize: new google.maps.Size(32, 32),
-            };
-
-            const issueMarker = new google.maps.Marker({
+            new google.maps.Marker({
               position: position,
               map: map,
               title: issue.category,
-              icon: issueIcon  // Red color for issue markers
-            });
-
-            // Add InfoWindow for the issue markers
-            const infoWindow = new google.maps.InfoWindow({
-              content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
-            });
-
-            issueMarker.addListener('click', function () {
-              infoWindow.open(map, issueMarker);
+              icon: {
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize: new google.maps.Size(32, 32),
+              }
             });
           });
         })
-        .catch(error => console.error('Error fetching issues:', error));
+        .catch(error => console.error("Error fetching issues:", error));
 
-      // Initialize markers as null
-      originMarker = null;
-      destinationMarker = null;
-
-      // Add click event listener for map to set origin and destination
-      map.addListener('click', function (event) {
+      map.addListener("click", (event) => {
         if (!originMarker) {
           originMarker = new google.maps.Marker({
             position: event.latLng,
             map: map,
-            label: "Start",
-            title: "Origin",
+            label: "S",
+            title: "Start",
             draggable: true
           });
           originPosition = event.latLng;
+          originMarker.addListener("dragend", () => {
+            originPosition = originMarker.getPosition();
+            if (destinationPosition) calculateRoute();
+          });
         } else if (!destinationMarker) {
           destinationMarker = new google.maps.Marker({
             position: event.latLng,
             map: map,
-            label: "End",
+            label: "D",
             title: "Destination",
             draggable: true
           });
           destinationPosition = event.latLng;
-
-          // Once both markers are set, calculate route
-          calculateRoute();
-        }
-      });
-
-      // If marker is dragged, recalculate route
-      google.maps.event.addListener(originMarker, 'dragend', function () {
-        originPosition = originMarker.getPosition();
-        if (destinationPosition) {
-          calculateRoute();
-        }
-      });
-
-      google.maps.event.addListener(destinationMarker, 'dragend', function () {
-        destinationPosition = destinationMarker.getPosition();
-        if (originPosition) {
+          destinationMarker.addListener("dragend", () => {
+            destinationPosition = destinationMarker.getPosition();
+            if (originPosition) calculateRoute();
+          });
           calculateRoute();
         }
       });
     }
 
-    // Function to calculate the route between origin and destination, avoiding issues
     function calculateRoute() {
-      if (originPosition && destinationPosition) {
-        // Create waypoints for each issue position
-        const waypoints = issuePositions.map(position => ({
-          location: position,
-          stopover: false  // Do not stop at these points, just use them to avoid
-        }));
-
-        // Create a detour effect by adding waypoints around the issue markers
-        const detourWaypoints = [];
-        issuePositions.forEach(position => {
-          // Slightly offset the waypoints from the issue marker to create a detour effect
-          const detourPoint = google.maps.geometry.spherical.computeOffset(position, 500, 90); // 500 meters away to the east (90 degrees)
-          detourWaypoints.push({ location: detourPoint, stopover: false });
-        });
-
-        // Combine original waypoints with detour waypoints
-        const allWaypoints = [...waypoints, ...detourWaypoints];
-
-        const request = {
-          origin: originPosition,
-          destination: destinationPosition,
-          waypoints: allWaypoints,  // Add the waypoints to the route
-          travelMode: google.maps.TravelMode.DRIVING,
-          optimizeWaypoints: true,  // Optimize the waypoints order to avoid issues and select the best route
-          avoidFerries: true,
-          avoidHighways: true,
-          avoidTolls: true
-        };
-
-        directionsService.route(request, function (result, status) {
-          if (status === google.maps.DirectionsStatus.OK) {
-            directionsRenderer.setDirections(result);
-          } else {
-            alert("Could not fetch routes. Please try again.");
-          }
-        });
+      if (!originPosition || !destinationPosition) {
+        alert("Please set both start and destination points.");
+        return;
       }
+
+      console.log("Calculating route...");
+      console.log("Origin:", originPosition.toString());
+      console.log("Destination:", destinationPosition.toString());
+
+      const avoidZones = issuePositions.map(pos => ({
+        location: pos,
+        radius: 300
+      }));
+
+      const request = {
+        origin: originPosition,
+        destination: destinationPosition,
+        travelMode: google.maps.TravelMode.DRIVING,
+        avoidTolls: true,
+        avoidFerries: true,
+        provideRouteAlternatives: true
+      };
+
+      directionsService.route(request, (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          console.log("Route Found:", result);
+          directionsRenderer.setDirections(result);
+        } else {
+          console.error("Route request failed:", status);
+          alert("Could not fetch routes. Please try again.");
+        }
+      });
     }
 
-    google.maps.event.addDomListener(window, 'load', initMap);
+    google.maps.event.addDomListener(window, "load", initMap);
   </script>
 </body>
 
