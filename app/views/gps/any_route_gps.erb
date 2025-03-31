@@ -97,9 +97,10 @@
       console.log("Origin:", originPosition.toString());
       console.log("Destination:", destinationPosition.toString());
 
-      const avoidZones = issuePositions.map(pos => ({
-        location: pos,
-        radius: 300
+      // Create waypoints to avoid issue markers
+      let waypoints = issuePositions.map(position => ({
+        location: google.maps.geometry.spherical.computeOffset(position, 500, Math.random() * 360),
+        stopover: false
       }));
 
       const request = {
@@ -108,13 +109,26 @@
         travelMode: google.maps.TravelMode.DRIVING,
         avoidTolls: true,
         avoidFerries: true,
-        provideRouteAlternatives: true
+        provideRouteAlternatives: true,
+        waypoints: waypoints
       };
 
       directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-          console.log("Route Found:", result);
-          directionsRenderer.setDirections(result);
+          let filteredRoutes = result.routes.filter(route => {
+            return !route.legs.some(leg => leg.steps.some(step => {
+              return issuePositions.some(issue => {
+                return google.maps.geometry.spherical.computeDistanceBetween(step.end_location, issue) < 300;
+              });
+            }));
+          });
+
+          if (filteredRoutes.length > 0) {
+            directionsRenderer.setDirections({ routes: filteredRoutes });
+          } else {
+            alert("No available routes avoiding issues. Showing the best available route.");
+            directionsRenderer.setDirections(result);
+          }
         } else {
           console.error("Route request failed:", status);
           alert("Could not fetch routes. Please try again.");
