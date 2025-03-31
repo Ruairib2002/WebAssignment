@@ -6,33 +6,36 @@
 <table class="table table-bordered">
   <thead>
     <tr>
-      <th>Category</th>
-      <th>Description</th>
-      <th>Location</th>
-      <th>Action</th>
+      <th style="font-size: 1.2em;">Category</th>
+      <th style="font-size: 1.2em;">Description</th>
+      <th style="font-size: 1.2em;">Location</th>
+      <th style="font-size: 1.2em;">Action</th>
     </tr>
   </thead>
   <tbody>
     <% @issues.each do |issue| %>
     <tr>
-      <td><%= issue.category %></td>
-      <td><%= issue.description %></td>
-      <td><%= "#{issue.latitude}, #{issue.longitude}" %></td>
+      <td style="font-size: 1.1em;"><%= issue.category %></td>
+      <td style="font-size: 1.1em;"><%= issue.description %></td>
+      <td style="font-size: 1.1em;"><%= "#{issue.latitude}, #{issue.longitude}" %></td>
       <td>
-        <% if issue.active? %>
-        <%= form_for issue, url: resolve_issue_path(issue), method: :patch do |f| %>
-        <%= f.hidden_field :active, value: false %>
-        <%= f.submit "Mark as Resolved", class: "btn btn-primary" %>
-        <% end %>
-        <% else %>
-        <span class="text-success">Resolved</span>
-        <% end %>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="4">
-        <div style="text-align: center;">
-          <img src="https://maps.googleapis.com/maps/api/staticmap?center=<%= issue.latitude %>,<%= issue.longitude %>&zoom=14&size=300x200&markers=color:red|label:•|<%= issue.latitude %>,<%= issue.longitude %>&key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA" alt="Issue Location Map" style="max-width: 100%; height: auto;">
+        <div class="issue-map-container">
+          <!-- Display the small static map for each issue -->
+          <div style="text-align: center;">
+            <img src="https://maps.googleapis.com/maps/api/staticmap?center=<%= issue.latitude %>,<%= issue.longitude %>&zoom=14&size=300x200&markers=color:red|label:•|<%= issue.latitude %>,<%= issue.longitude %>&key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA" alt="Issue Location Map" class="map-img">
+          </div>
+
+          <!-- Mark as Resolved button -->
+          <div style="margin-top: 10px; text-align: center;">
+            <% if issue.active? %>
+            <%= form_for issue, url: resolve_issue_path(issue), method: :patch do |f| %>
+            <%= f.hidden_field :active, value: false %>
+            <%= f.submit "Mark as Resolved", class: "btn btn-primary" %>
+            <% end %>
+            <% else %>
+            <span class="text-success">Resolved</span>
+            <% end %>
+          </div>
         </div>
       </td>
     </tr>
