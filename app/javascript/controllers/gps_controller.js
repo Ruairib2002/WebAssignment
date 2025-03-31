@@ -112,11 +112,13 @@ export default class extends Controller {
       }
     };
 
+    const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+
     fetch('/issues', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector("meta[name='csrf-token']").content,
+        'X-CSRF-Token': csrfToken, // Include CSRF token in the header
       },
       body: JSON.stringify(issueData)
     })
