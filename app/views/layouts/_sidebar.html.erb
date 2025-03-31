@@ -1,26 +1,10 @@
 <ul class="sidebar">
-  <li><%= link_to 'Home', root_path %></li>
-
-  <% if user_signed_in? %>
-  <li><%= link_to 'Dashboard', dashboard_path %></li>
-  <li><%= link_to 'Profile', profile_path(current_user) %></li>
-  <li><%= link_to 'My Groups', groups_path %></li>
-  <li><%= link_to 'Search Profiles', search_path %></li>
-
-  <% if current_user.groups.any? %>
-  <% current_user.groups.each do |group| %>
-  <% if group.id.present? %>
-  <li><%= link_to "#{group.name} Messages", group_messages_path(group_id: group.id) %></li>
-  <% end %>
-  <% end %>
-  <% end %>
-
-  <li><%= link_to 'Admin Panel', admin_panel_path %></li>
+  <li><%= link_to 'GPS', gps_path %></li>
+  <li><%= link_to 'New Route', new_route_path %></li>
 
   <li>
     <%= form_for(:user, url: destroy_user_session_path, method: :delete, html: { class: 'logout-form' }) do |f| %>
     <%= f.submit 'Logout', class: 'logout-btn', data: { turbo: false } %>
     <% end %>
   </li>
-  <% end %>
 </ul>

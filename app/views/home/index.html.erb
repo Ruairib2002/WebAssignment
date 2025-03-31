@@ -1,34 +1,20 @@
-<h1 class="text-5xl text-blue-600 font-bold text-center mt-12">
-  Welcome <%= current_user.full_name %>!
-</h1>
-<p class="text-lg text-gray-700 text-center mt-4">
-  You are currently logged in as a <%= current_user.role.role_name.capitalize %>.
-</p>
-
-<div class="mt-12 p-6 bg-gray-100 rounded-lg shadow-md">
-  <h2 class="text-3xl text-gray-800 font-semibold">Upcoming Assignments</h2>
-
-  <% if @assignments.any? %>
-  <ul class="space-y-4 mt-4">
-    <% @assignments.each do |assignment| %>
-    <li class="bg-white p-4 rounded-md shadow-md">
-      <h3 class="text-xl text-gray-800 font-bold"><%= assignment.title %></h3>
-      <p class="text-gray-600">Due: <%= assignment.due_date.strftime('%B %d, %Y') %></p>
-      <p class="text-gray-600">Description: <%= assignment.description %></p>
-      <%= link_to 'View Assignment', group_assignment_path(assignment.group, assignment), class: 'text-blue-500 hover:text-blue-700' %>
-    </li>
-    <% end %>
-  </ul>
-  <% else %>
-  <p class="text-gray-700">You currently have no upcoming assignments.</p>
-  <% end %>
-</div>
-
-<% if current_user.role.role_name == 'teacher' %>
-<div class="mt-8 p-4 bg-yellow-100 border-l-4 border-yellow-500">
-  <h3 class="text-xl text-yellow-600 font-bold">Teacher Dashboard</h3>
-  <p class="text-gray-700">
-    As a teacher, you can manage your groups, add students, and view assignments for each group.
+<div class="flex flex-col items-center justify-center h-screen">
+  <h1 class="text-6xl text-blue-600 font-bold text-center mb-12">
+    Welcome, <%= current_user.full_name %>!
+  </h1>
+  <p class="text-xl text-gray-700 text-center mb-8">
+    This app helps you navigate and save routes with ease.
   </p>
+
+  <div class="flex space-x-12">
+    <div class="text-center">
+      <%= link_to 'Use GPS', gps_path, class: 'bg-blue-500 text-white px-12 py-6 rounded-lg text-2xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg' %>
+      <p class="text-gray-600 mt-4">Click here to use GPS.</p>
+    </div>
+
+    <div class="text-center">
+      <%= link_to 'Create New Route', new_route_path, class: 'bg-green-500 text-white px-12 py-6 rounded-lg text-2xl font-semibold hover:bg-green-700 transition duration-300 shadow-lg' %>
+      <p class="text-gray-600 mt-4">Click here to create a new saved route.</p>
+    </div>
+  </div>
 </div>
-<% end %>
