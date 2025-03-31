@@ -21,4 +21,9 @@ class GpsController < ApplicationController
       render json: { success: false, error: new_place.errors.full_messages }
     end
   end
+
+  def show
+    place = Place.find(params[:id])
+    render json: { latitude: place.latitude, longitude: place.longitude }
+  end
 end

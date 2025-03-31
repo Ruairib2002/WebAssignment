@@ -49,12 +49,14 @@ Rails.application.routes.draw do
   get 'admin/groups/:id/edit', to: 'admin#edit_group', as: 'edit_admin_group'
   patch 'admin/groups/:id', to: 'admin#update_group', as: 'update_admin_group'
 
+
   namespace :admin do
     resources :users, only: [:index, :show, :edit, :update, :destroy]
     resources :groups, only: [:index, :show, :edit, :update, :destroy]
   end
 
   resources :routes, only: [:create]
+  resources :places, only: [:show]
   resources :places, only: [:show, :create]
   resources :issues
 end
