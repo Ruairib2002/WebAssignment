@@ -21,6 +21,21 @@ class IssuesController < ApplicationController
     render json: @issues
   end
 
+  # Action to display all issues in a table and resolve them
+  def resolve_all
+    @issues = Issue.all
+  end
+
+  # Action to mark a single issue as resolved
+  def resolve_issue
+    @issue = Issue.find(params[:id])
+    if @issue.update(active: false)
+      redirect_to resolve_all_issues_path, notice: 'Issue marked as resolved.'
+    else
+      redirect_to resolve_all_issues_path, alert: 'Failed to resolve issue.'
+    end
+  end
+
   private
 
   def issue_params

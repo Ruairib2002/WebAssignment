@@ -69,4 +69,8 @@ Rails.application.routes.draw do
       get 'active', to: 'issues#active'
     end
   end
+
+  # Add the resolve_issues and resolve_issue routes
+  get 'resolve_issues', to: 'issues#resolve_all', as: 'resolve_all_issues'
+  patch 'resolve_issue/:id', to: 'issues#resolve_issue', as: 'resolve_issue'
 end
