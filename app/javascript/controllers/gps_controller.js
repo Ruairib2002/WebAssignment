@@ -1,11 +1,12 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-  static targets = ["map", "fromPlace", "toPlace"];
+  static targets = ["map", "issueType", "issueForm"];
 
   static values = {
     lat: Number,
     lng: Number,
+    issueExpiryTime: Number,
   };
 
   connect() {
@@ -13,6 +14,20 @@ export default class extends Controller {
       this.directionsService = new google.maps.DirectionsService();
       this.directionsRenderer = new google.maps.DirectionsRenderer();
       this.initMap();
+
+      // Fetch existing issues and add them as markers on the map
+      fetch('/issues')
+        .then(response => response.json())
+        .then(issues => {
+          issues.forEach(issue => {
+            const issuePosition = new google.maps.LatLng(issue.latitude, issue.longitude);
+            new google.maps.Marker({
+              position: issuePosition,
+              map: this._map,
+              title: issue.issue_type // Display the issue type as the title of the marker
+            });
+          });
+        });
     }
   }
 
@@ -29,44 +44,103 @@ export default class extends Controller {
     const mapOptions = {
       center: center,
       zoom: 14,
-      mapId: "locations",
+      mapId: "locations", // Make sure this map ID is valid or remove it if not needed
     };
 
     if (!this._map) {
       this._map = new google.maps.Map(this.mapTarget, mapOptions);
     }
+
+    this.addClickListener();
     return this._map;
   }
 
-  updateMapWithRoute() {
-    const fromPlaceId = this.fromPlaceTarget.value;
-    const toPlaceId = this.toPlaceTarget.value;
+  addClickListener() {
+    this._map.addListener('click', (event) => {
+      const position = event.latLng;
+      this.placeMarker(position);
+    });
+  }
 
-    if (fromPlaceId && toPlaceId) {
-      Promise.all([
-        fetch(`/places/${fromPlaceId}`).then(response => response.json()),
-        fetch(`/places/${toPlaceId}`).then(response => response.json()),
-      ])
-        .then(([fromData, toData]) => {
-          const fromPosition = { lat: fromData.latitude, lng: fromData.longitude };
-          const toPosition = { lat: toData.latitude, lng: toData.longitude };
-
-          const request = {
-            origin: fromPosition,
-            destination: toPosition,
-            travelMode: google.maps.TravelMode.DRIVING,
-            provideRouteAlternatives: true,
-          };
-
-          this.directionsService.route(request, (result, status) => {
-            if (status === google.maps.DirectionsStatus.OK) {
-              this.directionsRenderer.setDirections(result);
-            } else {
-              alert("Could not fetch routes. Please try again.");
-            }
-          });
-        })
-        .catch(() => alert("Error fetching place data. Please try again."));
+  placeMarker(position) {
+    if (this.marker) {
+      this.marker.setMap(null);
     }
+
+    this.marker = new google.maps.Marker({
+      position: position,
+      map: this._map,
+      draggable: true,
+    });
+
+    this.issueLatitude = position.lat();
+    this.issueLongitude = position.lng();
+
+    this.issueFormTarget.style.display = 'block';
+    this.updateFormFields();
+
+    if (this.issueExpiryTime) {
+      setTimeout(() => {
+        this.removeMarker();
+      }, this.issueExpiryTime);
+    }
+  }
+
+  updateFormFields() {
+    this.issueFormTarget.querySelector("#latitude").value = this.issueLatitude;
+    this.issueFormTarget.querySelector("#longitude").value = this.issueLongitude;
+  }
+
+  removeMarker() {
+    if (this.marker) {
+      this.marker.setMap(null);
+      this.issueFormTarget.style.display = 'none'; // Hide the form when the marker is removed
+    }
+  }
+
+  submitIssue(event) {
+    event.preventDefault();
+    const issueType = this.issueTypeTarget.value;
+    const latitude = this.issueFormTarget.querySelector("#latitude").value;
+    const longitude = this.issueFormTarget.querySelector("#longitude").value;
+
+    const issueData = {
+      issue: {
+        issue_type: issueType,
+        latitude: latitude,
+        longitude: longitude,
+      }
+    };
+
+    fetch('/issues', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector("meta[name='csrf-token']").content,
+      },
+      body: JSON.stringify(issueData)
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          this.addIssueMarker(data.issue);
+          alert("Issue reported successfully!");
+          this.removeMarker(); // Optional: you can keep the marker or remove it
+        } else {
+          alert("Failed to report the issue. Errors: " + data.errors.join(", "));
+        }
+      })
+      .catch(() => alert("An error occurred. Please try again."));
+  }
+
+  // Function to add a new issue marker to the map
+  addIssueMarker(issue) {
+    const issuePosition = new google.maps.LatLng(issue.latitude, issue.longitude);
+
+    new google.maps.Marker({
+      position: issuePosition,
+      map: this._map,
+      title: issue.issue_type,  // Set the title to the issue type for identification
+    });
   }
 }

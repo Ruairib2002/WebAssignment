@@ -36,6 +36,9 @@
     let marker;
     let issueLatitude;
     let issueLongitude;
+    let issueType;
+    let issueTimeout;
+    const markerExpirationTime = 60 * 1000;
 
     function initMap() {
       // Map initialization with a default center
@@ -69,6 +72,14 @@
         // Update hidden form fields with latitude and longitude
         document.getElementById('latitude').value = issueLatitude;
         document.getElementById('longitude').value = issueLongitude;
+
+        // Start a timer to remove the marker after the expiration time
+        if (issueTimeout) {
+          clearTimeout(issueTimeout);
+        }
+        issueTimeout = setTimeout(() => {
+          marker.setMap(null); // Remove the marker after expiration time
+        }, markerExpirationTime);
       });
     }
 
