@@ -62,8 +62,10 @@
       });
 
       directionsService = new google.maps.DirectionsService();
-      directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: false });
-      directionsRenderer.setMap(map);
+      directionsRenderer = new google.maps.DirectionsRenderer({
+        suppressMarkers: false,
+        map: map  // Ensure the renderer is bound to the map
+      });
 
       fetch('/issues/active.json')
         .then(response => response.json())
@@ -144,6 +146,7 @@
 
       directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
+          // Filter routes that don't come within 300m of issues
           let filteredRoutes = result.routes.filter(route => {
             return !route.legs.some(leg => leg.steps.some(step => {
               return issuePositions.some(issue => {
@@ -152,10 +155,14 @@
             }));
           });
 
+          // Use the first filtered route if available, otherwise use the first original route
           const displayedRoute = filteredRoutes.length > 0 ? filteredRoutes[0] : result.routes[0];
-          directionsRenderer.setDirections({ routes: [displayedRoute] });
 
-          // Update the route table
+          // Set the full result but only display the selected route
+          directionsRenderer.setDirections(result);
+          directionsRenderer.setRouteIndex(result.routes.indexOf(displayedRoute));
+
+          // Update the route table with the displayed route's information
           updateRouteTable(displayedRoute);
 
           if (filteredRoutes.length === 0) {
