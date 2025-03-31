@@ -31,11 +31,16 @@ Rails.application.routes.draw do
     end
   end
 
+  # GPS Routes
   get 'gps', to: 'gps#index', as: 'gps'
   post 'gps/report_issue', to: 'gps#report_issue', as: 'report_issue'
 
+  # Fetch active issues as JSON (for map markers)
+  get 'issues/active', to: 'issues#active', as: 'active_issues'
+
   resources :messages, only: [:new, :create]
 
+  # Admin Routes
   get 'admin/panel', to: 'admin#panel', as: 'admin_panel'
   get 'admin/password', to: 'admin#new_password', as: 'new_admin_password'
   post 'admin/authenticate_password', to: 'admin#authenticate_password', as: 'authenticate_admin_password'

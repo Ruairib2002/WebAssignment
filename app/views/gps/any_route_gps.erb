@@ -28,6 +28,7 @@
     let destinationMarker;
     let originPosition;
     let destinationPosition;
+    let places = [];  // Array to hold the places
 
     function initMap() {
       var mapOptions = {
@@ -42,6 +43,23 @@
       directionsService = new google.maps.DirectionsService();
       directionsRenderer = new google.maps.DirectionsRenderer();
       directionsRenderer.setMap(map);
+
+      // Fetch places and issues from the server
+      fetch('/places.json')  // Adjust the URL if needed
+        .then(response => response.json())
+        .then(data => {
+          places = data;  // Store the places from the server
+          addMarkers();   // Add markers for places
+        })
+        .catch(error => console.error('Error fetching places:', error));
+
+      // Fetch active issues from the server and add markers for them
+      fetch('/issues/active.json')  // Adjust the route if needed
+        .then(response => response.json())
+        .then(issues => {
+          addIssueMarkers(issues);   // Add markers for issues
+        })
+        .catch(error => console.error('Error fetching issues:', error));
 
       // Initialize markers as null
       originMarker = null;
@@ -91,6 +109,53 @@
       });
     }
 
+    // Function to add markers for places
+    function addMarkers() {
+      places.forEach(place => {
+        const position = new google.maps.LatLng(place.latitude, place.longitude);
+
+        // Create a marker for each place
+        const marker = new google.maps.Marker({
+          position: position,
+          map: map,
+          title: place.name // Marker title is the place name
+        });
+
+        // Optional: Add an InfoWindow to show the place name when clicking the marker
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div><strong>${place.name}</strong><br>Latitude: ${place.latitude}<br>Longitude: ${place.longitude}</div>`
+        });
+
+        marker.addListener('click', function() {
+          infoWindow.open(map, marker);
+        });
+      });
+    }
+
+    // Function to add markers for issues
+    function addIssueMarkers(issues) {
+      issues.forEach(issue => {
+        const position = new google.maps.LatLng(issue.latitude, issue.longitude);
+
+        // Create a marker for each issue
+        const issueMarker = new google.maps.Marker({
+          position: position,
+          map: map,
+          title: issue.category // Marker title is the issue category
+        });
+
+        // Add an InfoWindow to show more info when clicking the marker
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
+        });
+
+        issueMarker.addListener('click', function() {
+          infoWindow.open(map, issueMarker);
+        });
+      });
+    }
+
+    // Function to calculate the route between origin and destination
     function calculateRoute() {
       if (originPosition && destinationPosition) {
         const request = {
