@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>GPS Map with Markers</title>
+  <title>GPS Map with Optimal and Risky Routes</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places,geometry"></script>
   <style>
     #map {
@@ -16,8 +16,7 @@
       border-collapse: collapse;
     }
 
-    #route-table th,
-    #route-table td {
+    #route-table th, #route-table td {
       padding: 8px;
       border: 1px solid #ddd;
       text-align: left;
@@ -30,27 +29,27 @@
 </head>
 
 <body>
-  <h1>Google Map with Markers</h1>
+  <h1>Google Map with Optimal and Risky Routes</h1>
   <div id="map"></div>
 
-  <!-- Route information table -->
   <table id="route-table">
     <thead>
       <tr>
         <th>Route</th>
         <th>Distance</th>
         <th>Time</th>
+        <th>Status</th>
       </tr>
     </thead>
-    <tbody id="route-table-body">
-    </tbody>
+    <tbody id="route-table-body"></tbody>
   </table>
 
-  <br><br>
+  <br>
   <button onclick="window.location.href='/gps/new_route'">Go to New Route Page</button>
 
   <script>
-    let map, directionsService, directionsRenderer;
+    let map, directionsService;
+    let renderers = [];
     let originMarker, destinationMarker;
     let originPosition, destinationPosition;
     let issuePositions = [];
@@ -62,10 +61,6 @@
       });
 
       directionsService = new google.maps.DirectionsService();
-      directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: false,
-        map: map  // Ensure the renderer is bound to the map
-      });
 
       fetch('/issues/active.json')
         .then(response => response.json())
@@ -99,7 +94,7 @@
           originPosition = event.latLng;
           originMarker.addListener("dragend", () => {
             originPosition = originMarker.getPosition();
-            if (destinationPosition) calculateRoute();
+            if (destinationPosition) calculateRoutes();
           });
         } else if (!destinationMarker) {
           destinationMarker = new google.maps.Marker({
@@ -112,92 +107,98 @@
           destinationPosition = event.latLng;
           destinationMarker.addListener("dragend", () => {
             destinationPosition = destinationMarker.getPosition();
-            if (originPosition) calculateRoute();
+            if (originPosition) calculateRoutes();
           });
-          calculateRoute();
+          calculateRoutes();
         }
       });
     }
 
-    function calculateRoute() {
+    function calculateRoutes() {
       if (!originPosition || !destinationPosition) {
         alert("Please set both start and destination points.");
         return;
       }
 
-      console.log("Calculating route...");
-      console.log("Origin:", originPosition.toString());
-      console.log("Destination:", destinationPosition.toString());
+      // Clear old routes
+      renderers.forEach(renderer => renderer.setMap(null));
+      renderers = [];
 
-      let waypoints = issuePositions.map(position => ({
-        location: google.maps.geometry.spherical.computeOffset(position, 500, Math.random() * 360),
-        stopover: false
-      }));
-
-      const request = {
+      let request = {
         origin: originPosition,
         destination: destinationPosition,
         travelMode: google.maps.TravelMode.DRIVING,
-        avoidTolls: true,
-        avoidFerries: true,
-        provideRouteAlternatives: true,
-        waypoints: waypoints
+        provideRouteAlternatives: true
       };
 
       directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-          // Filter routes that don't come within 300m of issues
-          let filteredRoutes = result.routes.filter(route => {
-            return !route.legs.some(leg => leg.steps.some(step => {
-              return issuePositions.some(issue => {
-                return google.maps.geometry.spherical.computeDistanceBetween(step.end_location, issue) < 300;
-              });
-            }));
+          let validRoutes = [];
+          let riskyRoutes = [];
+
+          result.routes.forEach((route, index) => {
+            let nearIssue = route.legs.some(leg =>
+              leg.steps.some(step =>
+                issuePositions.some(issue =>
+                  google.maps.geometry.spherical.computeDistanceBetween(step.end_location, issue) < 300
+                )
+              )
+            );
+
+            if (nearIssue) {
+              riskyRoutes.push({ route, index });
+            } else {
+              validRoutes.push({ route, index });
+            }
           });
 
-          // Use the first filtered route if available, otherwise use the first original route
-          const displayedRoute = filteredRoutes.length > 0 ? filteredRoutes[0] : result.routes[0];
+          // Show the best issue-free route in BLUE
+          if (validRoutes.length > 0) {
+            renderRoute(result, validRoutes[0].index, "blue", "Optimal (Issue-Free)");
+          }
 
-          // Set the full result but only display the selected route
-          directionsRenderer.setDirections(result);
-          directionsRenderer.setRouteIndex(result.routes.indexOf(displayedRoute));
+          // Show up to 2 risky routes in RED
+          riskyRoutes.slice(0, 2).forEach(({ route, index }) => {
+            renderRoute(result, index, "red", "Near Issues");
+          });
 
-          // Update the route table with the displayed route's information
-          updateRouteTable(displayedRoute);
-
-          if (filteredRoutes.length === 0) {
-            alert("No available routes avoiding issues. Showing the best available route.");
+          // If no issue-free routes exist, show at least 1 risky route
+          if (validRoutes.length === 0 && riskyRoutes.length > 0) {
+            alert("No fully issue-free routes. Showing the best available route.");
+            renderRoute(result, riskyRoutes[0].index, "red", "Near Issues");
           }
         } else {
           console.error("Route request failed:", status);
           alert("Could not fetch routes. Please try again.");
-          updateRouteTable(null);
         }
       });
     }
 
-    function updateRouteTable(route) {
-      const tableBody = document.getElementById('route-table-body');
-      tableBody.innerHTML = ''; // Clear existing content
+    function renderRoute(result, routeIndex, color, status) {
+      let renderer = new google.maps.DirectionsRenderer({
+        map: map,
+        directions: result,
+        routeIndex: routeIndex,
+        polylineOptions: { strokeColor: color }
+      });
+      renderers.push(renderer);
 
-      if (route) {
-        const leg = route.legs[0];
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>Route from S to D</td>
-          <td>${leg.distance.text}</td>
-          <td>${leg.duration.text}</td>
-        `;
-        tableBody.appendChild(row);
-      } else {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>Route from S to D</td>
-          <td>Unable to calculate</td>
-          <td>N/A</td>
-        `;
-        tableBody.appendChild(row);
-      }
+      updateRouteTable(result.routes[routeIndex], color, status);
+    }
+
+    function updateRouteTable(route, color, status) {
+      const tableBody = document.getElementById('route-table-body');
+      const leg = route.legs[0];
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td style="color: ${color};">Route</td>
+        <td>${leg.distance.text}</td>
+        <td>${leg.duration.text}</td>
+        <td>${status}</td>
+      `;
+
+      tableBody.appendChild(row);
     }
 
     google.maps.event.addDomListener(window, "load", initMap);
