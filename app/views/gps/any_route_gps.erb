@@ -64,6 +64,8 @@
     let originMarker, destinationMarker;
     let originPosition, destinationPosition;
     let issuePositions = [];
+    let currentRoutes = []; // Store all the routes for later interaction
+    let currentOptimalRouteIndex = null;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -147,14 +149,11 @@
         if (status === google.maps.DirectionsStatus.OK) {
           updateRouteTable(result.routes); // Update table with all routes
 
-          // Find the optimal route (e.g., first route is considered optimal)
-          const optimalRoute = result.routes[0];
+          currentRoutes = result.routes; // Store the routes
 
-          // Draw all routes
-          result.routes.forEach((route, index) => {
-            let isOptimalRoute = route === optimalRoute;
-            drawRoute(route, isOptimalRoute);
-          });
+          // Initially set the first route as the optimal route
+          setOptimalRoute(0);
+
         } else {
           console.error("Route request failed:", status);
           alert("Could not fetch routes. Please try again.");
@@ -208,18 +207,39 @@
       });
     }
 
+    function setOptimalRoute(routeIndex) {
+      // Mark the clicked route as the optimal route
+      currentOptimalRouteIndex = routeIndex;
+
+      // Clear old routes
+      routePolylines.forEach(polyline => polyline.setMap(null));
+      routePolylines = [];
+
+      // Redraw all routes and highlight the optimal one
+      currentRoutes.forEach((route, index) => {
+        let isOptimalRoute = (index === currentOptimalRouteIndex);
+        drawRoute(route, isOptimalRoute);
+      });
+
+      // Update the route table to reflect the optimal route
+      updateRouteTable(currentRoutes);
+    }
+
     function updateRouteTable(routes) {
       const tableBody = document.getElementById('route-table-body');
       tableBody.innerHTML = "";
 
       routes.forEach((route, index) => {
         const leg = route.legs[0];
-
         const row = document.createElement('tr');
+
+        // Highlight the optimal route in the table
+        const routeClass = (index === currentOptimalRouteIndex) ? 'style="background-color: lightgreen;"' : '';
+
         row.innerHTML = `
-          <td>Route ${index + 1}</td>
-          <td>${leg.distance.text}</td>
-          <td>${leg.duration.text}</td>
+          <td ${routeClass} onclick="setOptimalRoute(${index})">Route ${index + 1}</td>
+          <td ${routeClass}>${leg.distance.text}</td>
+          <td ${routeClass}>${leg.duration.text}</td>
         `;
 
         tableBody.appendChild(row);
