@@ -80,6 +80,24 @@ class AdminController < ApplicationController
     end
   end
 
+  def issues
+    @issues = Issue.all
+  end
+
+  def resolve_issue
+    @issue = Issue.find(params[:id])
+    if @issue.update(active: false)
+      redirect_to admin_issues_path, notice: "Issue marked as resolved."
+    else
+      redirect_to admin_issues_path, alert: "Failed to resolve the issue."
+    end
+  end
+
+  def resolve_all_issues
+    Issue.update_all(active: false)
+    redirect_to admin_issues_path, notice: "All issues resolved."
+  end
+
   private
 
   def verify_admin_password

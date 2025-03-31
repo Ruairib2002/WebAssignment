@@ -34,6 +34,8 @@ Rails.application.routes.draw do
   # GPS Routes
   get 'gps', to: 'gps#index', as: 'gps'
   post 'gps/report_issue', to: 'gps#report_issue', as: 'report_issue'
+  get 'admin/issues', to: 'admin#issues', as: 'admin_issues'
+
 
   # Fetch active issues as JSON (for map markers)
   get 'issues/active', to: 'issues#active', as: 'active_issues'

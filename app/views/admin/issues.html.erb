@@ -1,0 +1,44 @@
+<h1>Manage Issues</h1>
+
+<%= notice %>
+<%= alert %>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Description</th>
+      <th>Location</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @issues.each do |issue| %>
+    <tr>
+      <td><%= issue.category %></td>
+      <td><%= issue.description %></td>
+      <td><%= "#{issue.latitude}, #{issue.longitude}" %></td>
+      <td>
+        <% if issue.active? %>
+        <span class="text-danger">Active</span>
+        <% else %>
+        <span class="text-success">Resolved</span>
+        <% end %>
+      </td>
+      <td>
+        <% if issue.active? %>
+        <%= form_for issue, url: resolve_issue_path(issue), method: :patch do |f| %>
+        <%= f.hidden_field :active, value: false %>
+        <%= f.submit "Mark as Resolved", class: "btn btn-success" %>
+        <% end %>
+        <% else %>
+        <span class="text-muted">Already Resolved</span>
+        <% end %>
+      </td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to 'Back to Admin Panel', admin_panel_path, class: 'btn btn-secondary' %>
