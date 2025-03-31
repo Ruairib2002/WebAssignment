@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>GPS Map with Markers</title>
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places" %>
+  <style>
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Google Map with Markers</h1>
+
+  <div id="map"></div>
+
+  <br><br>
+  <button onclick="window.location.href='/gps/new_route'">Go to New Route Page</button>
+
+  <script>
+    let map;
+    let directionsService;
+    let directionsRenderer;
+    let originMarker;
+    let destinationMarker;
+    let originPosition;
+    let destinationPosition;
+
+    function initMap() {
+      var mapOptions = {
+        center: {
+          lat: 54.4231, // Default location, adjust as needed
+          lng: -6.4446
+        },
+        zoom: 12
+      };
+
+      map = new google.maps.Map(document.getElementById('map'), mapOptions);
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer.setMap(map);
+
+      // Initialize markers as null
+      originMarker = null;
+      destinationMarker = null;
+
+      // Add click event listener for map
+      map.addListener('click', function(event) {
+        // If no origin marker, set origin
+        if (!originMarker) {
+          originMarker = new google.maps.Marker({
+            position: event.latLng,
+            map: map,
+            label: "Start",
+            title: "Origin",
+            draggable: true
+          });
+          originPosition = event.latLng;
+        } else if (!destinationMarker) {
+          // If origin is set, set destination marker
+          destinationMarker = new google.maps.Marker({
+            position: event.latLng,
+            map: map,
+            label: "End",
+            title: "Destination",
+            draggable: true
+          });
+          destinationPosition = event.latLng;
+
+          // Once both markers are set, calculate route
+          calculateRoute();
+        }
+      });
+
+      // If marker is dragged, recalculate route
+      google.maps.event.addListener(originMarker, 'dragend', function() {
+        originPosition = originMarker.getPosition();
+        if (destinationPosition) {
+          calculateRoute();
+        }
+      });
+
+      google.maps.event.addListener(destinationMarker, 'dragend', function() {
+        destinationPosition = destinationMarker.getPosition();
+        if (originPosition) {
+          calculateRoute();
+        }
+      });
+    }
+
+    function calculateRoute() {
+      if (originPosition && destinationPosition) {
+        const request = {
+          origin: originPosition,
+          destination: destinationPosition,
+          travelMode: google.maps.TravelMode.DRIVING,
+          provideRouteAlternatives: true
+        };
+
+        directionsService.route(request, function(result, status) {
+          if (status == google.maps.DirectionsStatus.OK) {
+            directionsRenderer.setDirections(result);
+          } else {
+            alert("Could not fetch routes. Please try again.");
+          }
+        });
+      }
+    }
+
+    google.maps.event.addDomListener(window, 'load', initMap);
+  </script>
+</body>
+
+</html>

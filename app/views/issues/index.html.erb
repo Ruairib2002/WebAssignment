@@ -1,46 +1,79 @@
-<h1>Issues Map</h1>
+<!DOCTYPE html>
+<html>
 
-<div id="map" style="height: 500px; width: 100%;"></div>
-
-<script>
-  // Define initMap globally to make it accessible to Google Maps API
-  window.initMap = function() {
-    const map = new google.maps.Map(document.getElementById('map'), {
-      center: {
-        lat: 37.7749,
-        lng: -122.4194
-      }, // Default location (San Francisco)
-      zoom: 12,
-    });
-
-    // Inject the issues from the controller into the JavaScript
-    const issues = < %= @issues.to_json.html_safe % > ;
-
-    // Loop through each issue and add a marker to the map
-    issues.forEach(issue => {
-      new google.maps.Marker({
-        position: {
-          lat: issue.latitude,
-          lng: issue.longitude
-        },
-        map: map,
-        title: issue.description,
-        icon: getIcon(issue.category),
-      });
-    });
-
-    // Function to return different icons based on the issue category
-    function getIcon(category) {
-      switch (category.toLowerCase()) {
-        case 'roadwork':
-          return 'roadwork-icon.png'; // Ensure this path is correct
-        case 'police':
-          return 'police-icon.png'; // Ensure this path is correct
-        case 'accident':
-          return 'accident-icon.png'; // Ensure this path is correct
-        default:
-          return 'default-icon.png'; // Ensure this path is correct
-      }
+<head>
+  <title>Issues/Problem Map</title>
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places" %>
+  <style>
+    #map {
+      height: 500px;
+      width: 100%;
     }
-  }
-</script>
+  </style>
+</head>
+
+<body>
+  <h1>Report Road Issues</h1>
+
+  <!-- Form to submit a new issue -->
+  <form id="issue-form" action="<%= issues_path %>" method="POST">
+    <%= hidden_field_tag :latitude, "", id: "latitude" %>
+    <%= hidden_field_tag :longitude, "", id: "longitude" %>
+    <label for="issue_type">Issue Type:</label>
+    <select name="issue[issue_type]" id="issue_type">
+      <option value="Police">Police</option>
+      <option value="Roadworks">Roadworks</option>
+      <option value="Accident">Accident</option>
+    </select>
+    <%= submit_tag 'Add Issue' %>
+  </form>
+
+  <!-- Map container -->
+  <div id="map"></div>
+
+  <script>
+    let map;
+    let marker;
+    let issueLatitude;
+    let issueLongitude;
+
+    function initMap() {
+      // Map initialization with a default center
+      const mapOptions = {
+        center: {
+          lat: 54.4231, // Set your default latitude here
+          lng: -6.4446 // Set your default longitude here
+        },
+        zoom: 12
+      };
+
+      map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+      map.addListener('click', function(event) {
+        // Remove any existing marker
+        if (marker) {
+          marker.setMap(null);
+        }
+
+        // Place a new marker where the user clicked
+        marker = new google.maps.Marker({
+          position: event.latLng,
+          map: map,
+          draggable: true
+        });
+
+        // Update the latitude and longitude values
+        issueLatitude = event.latLng.lat();
+        issueLongitude = event.latLng.lng();
+
+        // Update hidden form fields with latitude and longitude
+        document.getElementById('latitude').value = issueLatitude;
+        document.getElementById('longitude').value = issueLongitude;
+      });
+    }
+
+    google.maps.event.addDomListener(window, 'load', initMap);
+  </script>
+</body>
+
+</html>

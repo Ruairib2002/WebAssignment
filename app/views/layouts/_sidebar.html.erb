@@ -1,6 +1,7 @@
 <ul class="sidebar">
   <li><%= link_to 'GPS', gps_path %></li>
   <li><%= link_to 'New Route', new_route_path %></li>
+  <li><%= link_to 'Any Route GPS', any_route_gps_path %></li>
 
   <li>
     <%= form_for(:user, url: destroy_user_session_path, method: :delete, html: { class: 'logout-form' }) do |f| %>

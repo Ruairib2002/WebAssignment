@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   get 'gps/index'
   get 'gps/new_route', to: 'gps#new_route', as: 'new_route'
+  get 'gps/any_route_gps', to: 'gps#any_route_gps', as: 'any_route_gps'
   get "up" => "rails/health#show", as: :rails_health_check
 
   root to: 'home#index'
@@ -48,7 +49,6 @@ Rails.application.routes.draw do
   get 'admin/groups', to: 'admin#groups_index', as: 'admin_groups'
   get 'admin/groups/:id/edit', to: 'admin#edit_group', as: 'edit_admin_group'
   patch 'admin/groups/:id', to: 'admin#update_group', as: 'update_admin_group'
-
 
   namespace :admin do
     resources :users, only: [:index, :show, :edit, :update, :destroy]

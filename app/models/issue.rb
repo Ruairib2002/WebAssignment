@@ -1,3 +1,5 @@
 class Issue < ApplicationRecord
-  validates :latitude, :longitude, :description, :category, presence: true
+  validates :latitude, presence: true
+  validates :longitude, presence: true
+  validates :issue_type, presence: true
 end
