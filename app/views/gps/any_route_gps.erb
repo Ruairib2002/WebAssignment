@@ -29,6 +29,8 @@
     let originPosition;
     let destinationPosition;
     let places = [];  // Array to hold the places
+    let issueMarkers = [];  // Array to hold the issue markers
+    let issuePositions = [];  // Array to hold the positions of issues (for avoiding in the route)
 
     function initMap() {
       var mapOptions = {
@@ -58,6 +60,9 @@
         .then(response => response.json())
         .then(issues => {
           addIssueMarkers(issues);   // Add markers for issues
+          issues.forEach(issue => {
+            issuePositions.push(new google.maps.LatLng(issue.latitude, issue.longitude));
+          });
         })
         .catch(error => console.error('Error fetching issues:', error));
 
@@ -132,16 +137,23 @@
       });
     }
 
-    // Function to add markers for issues
+    // Function to add markers for issues (with red color to distinguish them)
     function addIssueMarkers(issues) {
       issues.forEach(issue => {
         const position = new google.maps.LatLng(issue.latitude, issue.longitude);
 
-        // Create a marker for each issue
+        // Create a custom icon for issue markers (make them red)
+        const issueIcon = {
+          url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+          scaledSize: new google.maps.Size(32, 32),  // Adjust size if needed
+        };
+
+        // Create a marker for each issue with a red icon
         const issueMarker = new google.maps.Marker({
           position: position,
           map: map,
-          title: issue.category // Marker title is the issue category
+          title: issue.category, // Marker title is the issue category
+          icon: issueIcon  // Use red icon for issue markers
         });
 
         // Add an InfoWindow to show more info when clicking the marker
@@ -152,17 +164,30 @@
         issueMarker.addListener('click', function() {
           infoWindow.open(map, issueMarker);
         });
+
+        // Store the issue marker's position for route avoidance
+        issuePositions.push(position);
       });
     }
 
-    // Function to calculate the route between origin and destination
+    // Function to calculate the route between origin and destination, avoiding issues
     function calculateRoute() {
       if (originPosition && destinationPosition) {
+        // Create waypoints for the issues
+        const waypoints = issuePositions.map(position => ({
+          location: position,
+          stopover: true
+        }));
+
         const request = {
           origin: originPosition,
           destination: destinationPosition,
+          waypoints: waypoints,  // Add the issue waypoints
           travelMode: google.maps.TravelMode.DRIVING,
-          provideRouteAlternatives: true
+          optimizeWaypoints: true,  // Optimize the waypoints order to avoid issues
+          avoidFerries: true,
+          avoidHighways: true,
+          avoidTolls: true
         };
 
         directionsService.route(request, function(result, status) {
