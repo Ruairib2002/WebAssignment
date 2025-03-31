@@ -29,11 +29,16 @@ class IssuesController < ApplicationController
   # Action to mark a single issue as resolved
   def resolve_issue
     @issue = Issue.find(params[:id])
-    if @issue.update(active: false)
-      redirect_to resolve_all_issues_path, notice: 'Issue marked as resolved.'
-    else
-      redirect_to resolve_all_issues_path, alert: 'Failed to resolve issue.'
-    end
+
+    # Mark the issue as inactive
+    @issue.update(active: false)
+
+    # Delete the issue after marking as resolved
+    @issue.destroy
+
+    redirect_to resolve_all_issues_path, notice: 'Issue marked as resolved and deleted.'
+  rescue => e
+    redirect_to resolve_all_issues_path, alert: "Failed to resolve issue: #{e.message}"
   end
 
   private
