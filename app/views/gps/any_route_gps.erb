@@ -31,7 +31,7 @@
     }
 
     button {
-      padding: 10px 15px;
+      padding: 10px;
       font-size: 16px;
       cursor: pointer;
       margin-right: 10px;
@@ -73,6 +73,7 @@
 
       directionsService = new google.maps.DirectionsService();
 
+      // Fetch active issues and plot them on the map
       fetch('/issues/active.json')
         .then(response => response.json())
         .then(issues => {
@@ -139,14 +140,21 @@
         origin: originPosition,
         destination: destinationPosition,
         travelMode: google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: false
+        provideRouteAlternatives: true // Request alternative routes
       };
 
       directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-          const route = result.routes[0];
-          drawRouteWithDynamicColors(route);
-          updateRouteTable(route);
+          updateRouteTable(result.routes); // Update table with all routes
+
+          // Find the optimal route (e.g., first route is considered optimal)
+          const optimalRoute = result.routes[0];
+
+          // Draw all routes
+          result.routes.forEach((route, index) => {
+            let isOptimalRoute = route === optimalRoute;
+            drawRoute(route, isOptimalRoute);
+          });
         } else {
           console.error("Route request failed:", status);
           alert("Could not fetch routes. Please try again.");
@@ -154,61 +162,68 @@
       });
     }
 
-    function drawRouteWithDynamicColors(route) {
+    function drawRoute(route, isOptimalRoute) {
+      const color = isOptimalRoute ? 'blue' : 'transparent'; // Optimal route is blue, others are transparent
+      const polylineOptions = {
+        strokeOpacity: 1.0,
+        strokeWeight: 6,
+        map: map
+      };
+
       route.legs.forEach(leg => {
         leg.steps.forEach(step => {
           let path = step.path;
-          let currentSegment = [];
-          let inIssueZone = false;
+          let polyline = new google.maps.Polyline({
+            path: path,
+            geodesic: true,
+            strokeColor: color,
+            ...polylineOptions
+          });
+          routePolylines.push(polyline);
+        });
+      });
 
-          for (let i = 0; i < path.length; i++) {
-            let point = path[i];
+      // Highlight segments in the issue zone with red color
+      route.legs.forEach(leg => {
+        leg.steps.forEach(step => {
+          let path = step.path;
+          path.forEach((point, index) => {
             let nearIssue = issuePositions.some(issue =>
-              google.maps.geometry.spherical.computeDistanceBetween(point, issue) < 300
+              google.maps.geometry.spherical.computeDistanceBetween(point, issue) < 300 // 300m radius
             );
 
-            if (nearIssue !== inIssueZone) {
-              if (currentSegment.length > 0) {
-                drawSegment(currentSegment, inIssueZone ? "red" : "blue");
-                currentSegment = [];
-              }
-              inIssueZone = nearIssue;
+            if (nearIssue) {
+              let polyline = new google.maps.Polyline({
+                path: [path[index - 1], point], // Draw only the problematic segment
+                geodesic: true,
+                strokeColor: 'red',
+                strokeOpacity: 1.0,
+                strokeWeight: 6,
+                map: map
+              });
+              routePolylines.push(polyline);
             }
-            currentSegment.push(point);
-          }
-
-          if (currentSegment.length > 0) {
-            drawSegment(currentSegment, inIssueZone ? "red" : "blue");
-          }
+          });
         });
       });
     }
 
-    function drawSegment(path, color) {
-      let polyline = new google.maps.Polyline({
-        path: path,
-        geodesic: true,
-        strokeColor: color,
-        strokeOpacity: 1.0,
-        strokeWeight: 6,
-        map: map
-      });
-      routePolylines.push(polyline);
-    }
-
-    function updateRouteTable(route) {
+    function updateRouteTable(routes) {
       const tableBody = document.getElementById('route-table-body');
       tableBody.innerHTML = "";
-      const leg = route.legs[0];
 
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>Primary Route</td>
-        <td>${leg.distance.text}</td>
-        <td>${leg.duration.text}</td>
-      `;
+      routes.forEach((route, index) => {
+        const leg = route.legs[0];
 
-      tableBody.appendChild(row);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>Route ${index + 1}</td>
+          <td>${leg.distance.text}</td>
+          <td>${leg.duration.text}</td>
+        `;
+
+        tableBody.appendChild(row);
+      });
     }
 
     google.maps.event.addDomListener(window, "load", initMap);
