@@ -1,16 +1,15 @@
 class GpsController < ApplicationController
-  # Show a list of places (can be fetched via JSON in front-end)
+  skip_before_action :verify_authenticity_token, only: [:save_place]
   def index
-    @places = Place.order(:name)
-    render json: @places  # Send places as JSON to be used in the map
+    @places = Place.order(:name) 
   end
 
   # New route page
   def new_route
-    @places = Place.order(:name)
+    @places = Place.order(:name)  # Sorted alphabetically by name
   end
 
-  # Save new place (for reporting issues)
+  # Save a new place (from user adding a marker)
   def save_place
     place_data = JSON.parse(request.body.read)
     new_place = Place.create(
@@ -24,6 +23,12 @@ class GpsController < ApplicationController
     else
       render json: { success: false, error: new_place.errors.full_messages }
     end
+  end
+
+  # Fetch all saved places as JSON (sorted alphabetically by name)
+  def saved_places
+    places = Place.order(:name).select(:id, :name, :latitude, :longitude)  # Sorted alphabetically by name
+    render json: places
   end
 
   # Show details of a specific place

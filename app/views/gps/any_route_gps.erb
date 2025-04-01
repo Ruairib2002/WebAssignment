@@ -26,7 +26,7 @@
       background-color: #f2f2f2;
     }
 
-    #buttons {
+    #buttons, #quick-route {
       margin-top: 20px;
     }
 
@@ -36,12 +36,28 @@
       cursor: pointer;
       margin-right: 10px;
     }
+
+    select {
+      padding: 8px;
+      font-size: 16px;
+    }
   </style>
 </head>
 
 <body>
   <h1>GPS Map</h1>
   <div id="map"></div>
+
+  <div id="quick-route">
+    <h2>Quick Route</h2>
+    <label for="start-select">Start:</label>
+    <select id="start-select"></select>
+
+    <label for="end-select">Destination:</label>
+    <select id="end-select"></select>
+
+    <button onclick="quickRoute()">Find Route</button>
+  </div>
 
   <table id="route-table">
     <thead>
@@ -64,7 +80,7 @@
     let originMarker, destinationMarker;
     let originPosition, destinationPosition;
     let issuePositions = [];
-    let currentRoutes = []; // Store all the routes for later interaction
+    let currentRoutes = [];
     let currentOptimalRouteIndex = null;
     let geocoder;
 
@@ -75,9 +91,10 @@
       });
 
       directionsService = new google.maps.DirectionsService();
-      geocoder = new google.maps.Geocoder();  // Initialize geocoder
+      geocoder = new google.maps.Geocoder();
 
-      // Fetch active issues and plot them on the map
+      loadSavedPlaces();
+
       fetch('/issues/active.json')
         .then(response => response.json())
         .then(issues => {
@@ -85,23 +102,19 @@
             const position = new google.maps.LatLng(issue.latitude, issue.longitude);
             issuePositions.push(position);
 
-            // Geocode the issue position to get the road name or address
             geocoder.geocode({ location: position }, function(results, status) {
               if (status === google.maps.GeocoderStatus.OK && results[0]) {
                 const address = results[0].formatted_address;
-
-                // Create a marker for the issue
                 const marker = new google.maps.Marker({
                   position: position,
                   map: map,
-                  title: `Issue: ${address}`, // Title with address
+                  title: `Issue: ${address}`,
                   icon: {
                     url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
                     scaledSize: new google.maps.Size(32, 32),
                   }
                 });
 
-                // Add an info window to display the address when clicked
                 const infoWindow = new google.maps.InfoWindow({
                   content: `<h3>${issue.category}</h3><p>${address}</p>`
                 });
@@ -109,8 +122,6 @@
                 marker.addListener('click', () => {
                   infoWindow.open(map, marker);
                 });
-              } else {
-                console.error('Geocode failed: ' + status);
               }
             });
           });
@@ -123,7 +134,6 @@
             position: event.latLng,
             map: map,
             label: "S",
-            title: "Start",
             draggable: true
           });
           originPosition = event.latLng;
@@ -136,7 +146,6 @@
             position: event.latLng,
             map: map,
             label: "D",
-            title: "Destination",
             draggable: true
           });
           destinationPosition = event.latLng;
@@ -155,7 +164,6 @@
         return;
       }
 
-      // Clear old routes
       routePolylines.forEach(polyline => polyline.setMap(null));
       routePolylines = [];
 
@@ -163,20 +171,15 @@
         origin: originPosition,
         destination: destinationPosition,
         travelMode: google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true // Request alternative routes
+        provideRouteAlternatives: true
       };
 
       directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-          updateRouteTable(result.routes); // Update table with all routes
-
-          currentRoutes = result.routes; // Store the routes
-
-          // Initially set the first route as the optimal route
+          updateRouteTable(result.routes);
+          currentRoutes = result.routes;
           setOptimalRoute(0);
-
         } else {
-          console.error("Route request failed:", status);
           alert("Could not fetch routes. Please try again.");
         }
       });
@@ -184,65 +187,31 @@
 
     function drawRoute(route, isOptimalRoute) {
       const color = isOptimalRoute ? 'blue' : 'lightblue';
-      const polylineOptions = {
-        strokeOpacity: 1.0,
-        strokeWeight: 6,
-        map: map
-      };
 
       route.legs.forEach(leg => {
         leg.steps.forEach(step => {
-          let path = step.path;
           let polyline = new google.maps.Polyline({
-            path: path,
-            geodesic: true,
+            path: step.path,
             strokeColor: color,
-            ...polylineOptions
+            strokeOpacity: 1.0,
+            strokeWeight: 6,
+            map: map
           });
           routePolylines.push(polyline);
-        });
-      });
-
-      // Highlight segments in the issue zone with red color
-      route.legs.forEach(leg => {
-        leg.steps.forEach(step => {
-          let path = step.path;
-          path.forEach((point, index) => {
-            let nearIssue = issuePositions.some(issue =>
-              google.maps.geometry.spherical.computeDistanceBetween(point, issue) < 300 // 300m radius
-            );
-
-            if (nearIssue) {
-              let polyline = new google.maps.Polyline({
-                path: [path[index - 1], point], // Draw only the problematic segment
-                geodesic: true,
-                strokeColor: 'red',
-                strokeOpacity: 1.0,
-                strokeWeight: 6,
-                map: map
-              });
-              routePolylines.push(polyline);
-            }
-          });
         });
       });
     }
 
     function setOptimalRoute(routeIndex) {
-      // Mark the clicked route as the optimal route
       currentOptimalRouteIndex = routeIndex;
 
-      // Clear old routes
       routePolylines.forEach(polyline => polyline.setMap(null));
       routePolylines = [];
 
-      // Redraw all routes and highlight the optimal one
       currentRoutes.forEach((route, index) => {
-        let isOptimalRoute = (index === currentOptimalRouteIndex);
-        drawRoute(route, isOptimalRoute);
+        drawRoute(route, index === currentOptimalRouteIndex);
       });
 
-      // Update the route table to reflect the optimal route
       updateRouteTable(currentRoutes);
     }
 
@@ -254,7 +223,6 @@
         const leg = route.legs[0];
         const row = document.createElement('tr');
 
-        // Highlight the optimal route in the table
         const routeClass = (index === currentOptimalRouteIndex) ? 'style="background-color: lightgreen;"' : '';
 
         row.innerHTML = `
@@ -265,6 +233,43 @@
 
         tableBody.appendChild(row);
       });
+    }
+
+    function loadSavedPlaces() {
+      fetch('/gps/saved_places.json')
+        .then(response => response.json())
+        .then(places => {
+          const startSelect = document.getElementById("start-select");
+          const endSelect = document.getElementById("end-select");
+
+          places.forEach(place => {
+            let option = new Option(place.name, JSON.stringify({ lat: place.latitude, lng: place.longitude }));
+            startSelect.add(option.cloneNode(true));
+            endSelect.add(option);
+          });
+        })
+        .catch(error => console.error("Error fetching saved places:", error));
+    }
+
+    function quickRoute() {
+      const startValue = JSON.parse(document.getElementById("start-select").value);
+      const endValue = JSON.parse(document.getElementById("end-select").value);
+
+      if (!startValue || !endValue) {
+        alert("Please select both start and destination points.");
+        return;
+      }
+
+      if (originMarker) originMarker.setMap(null);
+      if (destinationMarker) destinationMarker.setMap(null);
+
+      originMarker = new google.maps.Marker({ position: startValue, map: map, label: "S" });
+      destinationMarker = new google.maps.Marker({ position: endValue, map: map, label: "D" });
+
+      originPosition = startValue;
+      destinationPosition = endValue;
+
+      calculateRoutes();
     }
 
     google.maps.event.addDomListener(window, "load", initMap);

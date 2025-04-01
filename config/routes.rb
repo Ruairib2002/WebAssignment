@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   get 'gps/index'
   get 'gps/new_route', to: 'gps#new_route', as: 'new_route'
   get 'gps/any_route_gps', to: 'gps#any_route_gps', as: 'any_route_gps'
+  get 'gps/saved_places', to: 'gps#saved_places', as: 'saved_places'
+  post 'gps/save_place', to: 'gps#save_place', as: 'save_place'  # Add this line
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   root to: 'home#index'
@@ -36,7 +39,6 @@ Rails.application.routes.draw do
   post 'gps/report_issue', to: 'gps#report_issue', as: 'report_issue'
   get 'admin/issues', to: 'admin#issues', as: 'admin_issues'
 
-
   # Fetch active issues as JSON (for map markers)
   get 'issues/active', to: 'issues#active', as: 'active_issues'
 
@@ -63,7 +65,6 @@ Rails.application.routes.draw do
   end
 
   resources :routes, only: [:create]
-  resources :places, only: [:show]
   resources :places, only: [:show, :create]
 
   resources :issues do
@@ -72,7 +73,7 @@ Rails.application.routes.draw do
     end
   end
 
-  # Add the resolve_issues and resolve_issue routes
+  # Issue Resolution Routes
   get 'resolve_issues', to: 'issues#resolve_all', as: 'resolve_all_issues'
   patch 'resolve_issue/:id', to: 'issues#resolve_issue', as: 'resolve_issue'
 end
