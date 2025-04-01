@@ -3,7 +3,7 @@
 
 <head>
   <title>Issues/Problem Map</title>
-  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places" %>
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places,geometry" %>
   <style>
     #map {
       height: 500px;
@@ -54,6 +54,12 @@
     .btn:hover {
       background-color: #0056b3;
     }
+
+    /* Style for the radius input */
+    #radius-input {
+      margin-top: 10px;
+      font-size: 16px;
+    }
   </style>
 </head>
 
@@ -75,12 +81,21 @@
   <!-- Button to resolve issues -->
   <a href="<%= resolve_all_issues_path %>" class="btn">Resolve Issues</a>
 
+  <!-- Input for the radius of effect -->
+  <div id="radius-input">
+    <label for="radius">Radius of Effect (in meters):</label>
+    <input type="number" id="radius" value="100" min="10" max="1000" />
+  </div>
+
   <script>
     let map;
     let marker;
     let issueLatitude;
     let issueLongitude;
-    const markerExpirationTime = 60 * 1000; // 1 minute for marker expiration
+    let issueRadius = 100; // Default radius of effect
+    const issueMarkers = []; // To store issue markers
+    const issueCircles = []; // To store the circles around issue markers
+    let routePolylines = []; // To store the drawn routes
 
     // This function initializes the map and adds existing issues as markers
     function initMap() {
@@ -113,9 +128,25 @@
               title: issue.category, // Marker title is the issue category
             });
 
+            // Create a circle for each issue to represent the radius of effect
+            const issueCircle = new google.maps.Circle({
+              center: position,
+              radius: issue.radius || 100, // Default to 100 meters if no radius is provided
+              map: map,
+              fillColor: 'rgba(255, 0, 0, 0.3)',
+              fillOpacity: 0.3,
+              strokeColor: 'red',
+              strokeOpacity: 0.8,
+              strokeWeight: 1
+            });
+
+            // Store markers and circles
+            issueMarkers.push(issueMarker);
+            issueCircles.push(issueCircle);
+
             // Add an InfoWindow to display more info when clicking the marker
             const infoWindow = new google.maps.InfoWindow({
-              content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
+              content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}<br><strong>Radius of Effect:</strong> ${issue.radius || 100} meters</div>`
             });
 
             issueMarker.addListener('click', function() {
@@ -150,7 +181,11 @@
     // Function to redirect to the form page with latitude and longitude as parameters
     function goToNewIssueForm() {
       if (issueLatitude && issueLongitude) {
-        window.location.href = "<%= new_issue_path %>?latitude=" + issueLatitude + "&longitude=" + issueLongitude;
+        // Get the radius from the input
+        issueRadius = parseInt(document.getElementById('radius').value) || 100;
+
+        // Redirect to the form, passing latitude, longitude, and radius
+        window.location.href = "<%= new_issue_path %>?latitude=" + issueLatitude + "&longitude=" + issueLongitude + "&radius=" + issueRadius;
       } else {
         alert("Please click on the map to place the marker first.");
       }
@@ -169,10 +204,31 @@
           issueItem.innerHTML = `
             <div class="issue-category">${issue.category}</div>
             <div class="issue-coordinates">Latitude: ${issue.latitude}, Longitude: ${issue.longitude}</div>
+            <div class="issue-coordinates">Radius: ${issue.radius || 100} meters</div>
           `;
 
           issuesContainer.appendChild(issueItem);
         }
+      });
+    }
+
+    function checkRouteAgainstIssue(routePath) {
+      routePath.forEach((step) => {
+        issueCircles.forEach((circle, index) => {
+          const distance = google.maps.geometry.spherical.computeDistanceBetween(step, circle.getCenter());
+          if (distance <= circle.getRadius()) {
+            routePolylines.forEach(polyline => polyline.setMap(null)); // Remove previous polylines
+            // Change polyline color to red for this route if it's within the radius
+            const polyline = new google.maps.Polyline({
+              path: routePath,
+              strokeColor: 'red',
+              strokeOpacity: 1.0,
+              strokeWeight: 6,
+              map: map
+            });
+            routePolylines.push(polyline);
+          }
+        });
       });
     }
 
