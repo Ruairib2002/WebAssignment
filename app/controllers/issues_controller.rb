@@ -1,5 +1,8 @@
 class IssuesController < ApplicationController
   def index
+    # Delete expired issues automatically on each page load
+    Issue.where("expired_at <= ?", Time.now).destroy_all
+
     @issues = Issue.all
   end
 
@@ -9,12 +12,21 @@ class IssuesController < ApplicationController
 
   def create
     @issue = Issue.new(issue_params)
+
     if @issue.save
+      # Calculate the expiration time after the issue is saved
+      if @issue.estimated_time != "indefinite" && @issue.estimated_time.present?
+        @issue.update(expired_at: @issue.created_at + @issue.estimated_time.to_f.hours)
+      else
+        @issue.update(expired_at: nil) # No expiration time for indefinite
+      end
+
       redirect_to issues_path, notice: 'Issue created successfully.'
     else
       render :new
     end
   end
+
 
   def active
     @issues = Issue.where(active: true)
@@ -44,6 +56,6 @@ class IssuesController < ApplicationController
   private
 
   def issue_params
-    params.require(:issue).permit(:description, :category, :latitude, :longitude)
+    params.require(:issue).permit(:description, :category, :latitude, :longitude, :estimated_time, :active)
   end
 end
