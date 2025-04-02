@@ -47,7 +47,7 @@ class IssuesController < ApplicationController
 
     if existing_vote
       # If the user has already voted, show the "Already voted" message
-      redirect_to resolve_all_issues_path, alert: "Already voted for this issue."  # Fix here to use the correct path
+      redirect_to resolve_all_issues_path, alert: "Already voted for this issue."
     else
       # If the user has not voted, create a new vote
       vote = @issue.issue_votes.create(user: @user, resolved: true)
