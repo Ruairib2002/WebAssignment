@@ -25,11 +25,6 @@
 </div>
 
 <div class="form-group">
-  <%= f.label :role_id, "Select Role" %>
-  <%= f.select :role_id, Role.all.collect { |role| [role.role_name, role.id] }, include_blank: false, class: 'form-control' %>
-</div>
-
-<div class="form-group">
   <%= f.submit "Sign up", class: 'btn btn-primary' %>
 </div>
 <% end %>
