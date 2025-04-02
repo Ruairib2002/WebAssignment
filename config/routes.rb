@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   get 'gps/new_route', to: 'gps#new_route', as: 'new_route'
   get 'gps/any_route_gps', to: 'gps#any_route_gps', as: 'any_route_gps'
   get 'gps/saved_places', to: 'gps#saved_places', as: 'saved_places'
-  post 'gps/save_place', to: 'gps#save_place', as: 'save_place'  # Add this line
+  post 'gps/save_place', to: 'gps#save_place', as: 'save_place'
 
   get "up" => "rails/health#show", as: :rails_health_check
 
