@@ -16,6 +16,8 @@
   </thead>
   <tbody>
     <% @issues.each do |issue| %>
+    <% unless issue.active == false %>
+    <!-- Only show active issues in the list -->
     <tr>
       <td style="font-size: 1.1em;"><%= issue.category %></td>
       <td style="font-size: 1.1em;"><%= issue.description %></td>
@@ -42,6 +44,8 @@
         </div>
       </td>
     </tr>
+    <% end %>
+    <!-- End of active check -->
     <% end %>
   </tbody>
 </table>
