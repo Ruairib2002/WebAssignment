@@ -1,7 +1,9 @@
 <h1>Resolve Issues</h1>
 
 <%= notice %>
+<!-- This will show the success message after the redirect -->
 <%= alert %>
+<!-- This will show an error message if there was an issue -->
 
 <table class="table table-bordered">
   <thead>
@@ -27,7 +29,8 @@
 
           <!-- Mark as Resolved button -->
           <div style="margin-top: 10px; text-align: center;">
-            <% if issue.active? %>
+            <% if issue.active %>
+            <!-- Check if the issue is still active -->
             <%= form_for issue, url: resolve_issue_path(issue), method: :patch do |f| %>
             <%= f.hidden_field :active, value: false %>
             <%= f.submit "Mark as Resolved", class: "btn btn-primary" %>

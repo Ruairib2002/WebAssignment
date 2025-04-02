@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_01_095653) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_02_132148) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -66,6 +66,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_01_095653) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "teacher_id"
+  end
+
+  create_table "issue_votes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "issue_id", null: false
+    t.boolean "resolved", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["issue_id"], name: "index_issue_votes_on_issue_id"
+    t.index ["user_id", "issue_id"], name: "index_issue_votes_on_user_id_and_issue_id", unique: true
+    t.index ["user_id"], name: "index_issue_votes_on_user_id"
   end
 
   create_table "issues", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -163,6 +174,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_01_095653) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "assignments", "groups"
   add_foreign_key "files", "users", column: "uploaded_by"
+  add_foreign_key "issue_votes", "issues"
+  add_foreign_key "issue_votes", "users"
   add_foreign_key "submissions", "assignments"
   add_foreign_key "submissions", "users"
 end
