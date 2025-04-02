@@ -1,9 +1,19 @@
 <h1>Resolve Issues</h1>
 
-<%= notice %>
-<!-- This will show the success message after the redirect -->
-<%= alert %>
-<!-- This will show an error message if there was an issue -->
+<!-- Display notice and alert messages at the top right -->
+<div class="notification-container" style="position: fixed; top: 10px; right: 10px; z-index: 1000;">
+  <% if notice %>
+  <div class="alert alert-success" role="alert">
+    <%= notice %>
+  </div>
+  <% end %>
+
+  <% if alert %>
+  <div class="alert alert-danger" role="alert">
+    <%= alert %>
+  </div>
+  <% end %>
+</div>
 
 <table class="table table-bordered">
   <thead>
