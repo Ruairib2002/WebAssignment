@@ -53,8 +53,11 @@ class IssuesController < ApplicationController
       vote = @issue.issue_votes.create(user: @user, resolved: true)
 
       if vote.persisted?
-        # Check if the issue has enough resolved votes (5 votes in this case)
-        if @issue.issue_votes.where(resolved: true).count >= 5
+        # Check if the issue has enough resolved votes (2 votes in this case, adjust to your needs)
+        if @issue.issue_votes.where(resolved: true).count >= 2
+          # Delete associated votes before deleting the issue
+          @issue.issue_votes.destroy_all  # Remove all related votes
+
           @issue.update(active: false) # Mark the issue as resolved
           @issue.destroy # Delete the issue after it is resolved
           message = "Issue has been marked as resolved and deleted."
