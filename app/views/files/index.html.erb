@@ -1,7 +1,0 @@
-<h1>Files in <%= @group.name %></h1>
-<%= link_to 'Upload File', new_group_file_path(@group) %>
-<ul>
-  <% @files.each do |file| %>
-  <li><%= file.file.filename %></li>
-  <% end %>
-</ul>
