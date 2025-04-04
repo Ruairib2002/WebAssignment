@@ -2,7 +2,7 @@ class Issue < ApplicationRecord
   validates :latitude, presence: true
   validates :longitude, presence: true
 
-  has_many :issue_votes
+  has_many :issue_votes, dependent: :destroy
   has_many :users, through: :issue_votes
 
   def check_and_resolve!
