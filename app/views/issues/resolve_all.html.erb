@@ -1,6 +1,5 @@
 <h1>Resolve Issues</h1>
 
-<!-- Display notice and alert messages at the top right -->
 <div class="notification-container" style="position: fixed; top: 10px; right: 10px; z-index: 1000;">
   <% if notice %>
   <div class="alert alert-success" role="alert">
@@ -27,22 +26,18 @@
   <tbody>
     <% @issues.each do |issue| %>
     <% unless issue.active == false %>
-    <!-- Only show active issues in the list -->
     <tr>
       <td style="font-size: 1.1em;"><%= issue.category %></td>
       <td style="font-size: 1.1em;"><%= issue.description %></td>
       <td style="font-size: 1.1em;"><%= "#{issue.latitude}, #{issue.longitude}" %></td>
       <td>
         <div class="issue-map-container">
-          <!-- Display the small static map for each issue -->
           <div style="text-align: center;">
             <img src="https://maps.googleapis.com/maps/api/staticmap?center=<%= issue.latitude %>,<%= issue.longitude %>&zoom=14&size=300x200&markers=color:red|label:•|<%= issue.latitude %>,<%= issue.longitude %>&key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA" alt="Issue Location Map" class="map-img">
           </div>
 
-          <!-- Mark as Resolved button -->
           <div style="margin-top: 10px; text-align: center;">
             <% if issue.active %>
-            <!-- Check if the issue is still active -->
             <%= form_for issue, url: resolve_issue_path(issue), method: :patch do |f| %>
             <%= f.hidden_field :active, value: false %>
             <%= f.submit "Mark as Resolved", class: "btn btn-primary" %>
@@ -55,7 +50,6 @@
       </td>
     </tr>
     <% end %>
-    <!-- End of active check -->
     <% end %>
   </tbody>
 </table>

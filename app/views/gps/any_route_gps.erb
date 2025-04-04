@@ -42,7 +42,6 @@
       font-size: 16px;
     }
 
-    /* Hover effect */
     #route-table tr:hover {
       background-color: #f5f5f5;
       cursor: pointer;
@@ -50,13 +49,11 @@
       transition: transform 0.3s ease, background-color 0.3s ease;
     }
 
-    /* Highlight the selected route */
     .selected-route {
       background-color: lightgreen;
       font-weight: bold;
       transform: scale(1.05);
     }
-
   </style>
 </head>
 
@@ -100,9 +97,9 @@
     let currentRoutes = [];
     let currentOptimalRouteIndex = null;
     let geocoder;
-    let issueMarkers = []; // Array to store issue markers for later reference
-    const DISTANCE_THRESHOLD = 100; // 100 meters
-    let issueCircles = []; // Store circles around issues
+    let issueMarkers = [];
+    const DISTANCE_THRESHOLD = 100;
+    let issueCircles = [];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -112,7 +109,6 @@
 
       directionsService = new google.maps.DirectionsService();
       geocoder = new google.maps.Geocoder();
-
       loadSavedPlaces();
 
       fetch('/issues/active.json')
@@ -122,7 +118,6 @@
             const position = new google.maps.LatLng(issue.latitude, issue.longitude);
             issuePositions.push(position);
 
-            // Create a circle around the issue marker
             const issueCircle = new google.maps.Circle({
               center: position,
               radius: DISTANCE_THRESHOLD,
@@ -221,90 +216,6 @@
       });
     }
 
-    function drawRoute(route, isOptimalRoute) {
-      const color = isOptimalRoute ? 'blue' : 'lightblue';
-
-      route.legs.forEach(leg => {
-        leg.steps.forEach(step => {
-          let polyline = new google.maps.Polyline({
-            path: step.path,
-            strokeColor: color,
-            strokeOpacity: 1.0,
-            strokeWeight: 6,
-            map: map
-          });
-
-          // Check for nearby issue markers
-          if (isNearIssue(step.path)) {
-            polyline.setOptions({ strokeColor: 'red' }); // Change color to red if near issue
-          }
-
-          routePolylines.push(polyline);
-        });
-      });
-    }
-
-    function isNearIssue(path) {
-      for (let i = 0; i < path.length; i++) {
-        for (let j = 0; j < issuePositions.length; j++) {
-          const distance = google.maps.geometry.spherical.computeDistanceBetween(path[i], issuePositions[j]);
-          if (distance < DISTANCE_THRESHOLD) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
-
-    function setOptimalRoute(routeIndex) {
-      currentOptimalRouteIndex = routeIndex;
-
-      routePolylines.forEach(polyline => polyline.setMap(null));
-      routePolylines = [];
-
-      currentRoutes.forEach((route, index) => {
-        drawRoute(route, index === currentOptimalRouteIndex);
-      });
-
-      updateRouteTable(currentRoutes);
-    }
-
-    function updateRouteTable(routes) {
-      const tableBody = document.getElementById('route-table-body');
-      tableBody.innerHTML = "";
-
-      routes.forEach((route, index) => {
-        const leg = route.legs[0];
-        const row = document.createElement('tr');
-
-        const routeClass = (index === currentOptimalRouteIndex) ? 'style="background-color: lightgreen;"' : '';
-
-        row.innerHTML = `
-          <td ${routeClass} onclick="setOptimalRoute(${index})">Route ${index + 1}</td>
-          <td ${routeClass}>${leg.distance.text}</td>
-          <td ${routeClass}>${leg.duration.text}</td>
-        `;
-
-        tableBody.appendChild(row);
-      });
-    }
-
-    function loadSavedPlaces() {
-      fetch('/gps/saved_places.json')
-        .then(response => response.json())
-        .then(places => {
-          const startSelect = document.getElementById("start-select");
-          const endSelect = document.getElementById("end-select");
-
-          places.forEach(place => {
-            let option = new Option(place.name, JSON.stringify({ lat: place.latitude, lng: place.longitude }));
-            startSelect.add(option.cloneNode(true));
-            endSelect.add(option);
-          });
-        })
-        .catch(error => console.error("Error fetching saved places:", error));
-    }
-
     function quickRoute() {
       const startValue = JSON.parse(document.getElementById("start-select").value);
       const endValue = JSON.parse(document.getElementById("end-select").value);
@@ -322,7 +233,6 @@
 
       originPosition = startValue;
       destinationPosition = endValue;
-
       calculateRoutes();
     }
 

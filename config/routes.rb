@@ -39,12 +39,10 @@ Rails.application.routes.draw do
   post 'gps/report_issue', to: 'gps#report_issue', as: 'report_issue'
   get 'admin/issues', to: 'admin#issues', as: 'admin_issues'
 
-  # Fetch active issues as JSON (for map markers)
   get 'issues/active', to: 'issues#active', as: 'active_issues'
 
   resources :messages, only: [:new, :create]
 
-  # Admin Routes
   get 'admin/panel', to: 'admin#panel', as: 'admin_panel'
   get 'admin/password', to: 'admin#new_password', as: 'new_admin_password'
   post 'admin/authenticate_password', to: 'admin#authenticate_password', as: 'authenticate_admin_password'
@@ -73,7 +71,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # Issue Resolution Routes
   get 'resolve_issues', to: 'issues#resolve_all', as: 'resolve_all_issues'
   patch 'resolve_issue/:id', to: 'issues#resolve_issue', as: 'resolve_issue'
 end
