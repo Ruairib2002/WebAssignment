@@ -2,8 +2,8 @@
 <html>
 
 <head>
-  <title>GPS Map</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places,geometry"></script>
+  <title>GPS Map with Markers</title>
+  <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=AIzaSyCmHtKK6Khdr2koqAakd0JrpNcYQJCJBpA&libraries=places,geometry" %>
   <style>
     #map {
       height: 500px;
@@ -26,7 +26,7 @@
       background-color: #f2f2f2;
     }
 
-    #buttons, #quick-route {
+    #buttons {
       margin-top: 20px;
     }
 
@@ -58,9 +58,13 @@
 </head>
 
 <body>
-  <h1>GPS Map</h1>
+  <h1>Google Map with Markers</h1>
+
   <div id="map"></div>
 
+  <br><br>
+
+  <!-- Quick Route Form -->
   <div id="quick-route">
     <h2>Quick Route</h2>
     <label for="start-select">Start:</label>
@@ -72,6 +76,7 @@
     <button onclick="quickRoute()">Find Route</button>
   </div>
 
+  <!-- Route Table -->
   <table id="route-table">
     <thead>
       <tr>
@@ -84,135 +89,167 @@
   </table>
 
   <div id="buttons">
+    <button onclick="window.location.href='/gps/new_route'">Go to New Route Page</button>
     <button onclick="window.location.href='/issues'">View All Issues</button>
-    <button onclick="window.location.href='/gps/index'">Save A New Place</button>
   </div>
 
   <script>
-    let map, directionsService;
-    let routePolylines = [];
-    let originMarker, destinationMarker;
-    let originPosition, destinationPosition;
+    let map;
+    let directionsService;
+    let directionsRenderer;
+    let originMarker;
+    let destinationMarker;
+    let originPosition;
+    let destinationPosition;
     let issuePositions = [];
     let currentRoutes = [];
-    let currentOptimalRouteIndex = null;
     let geocoder;
     let issueMarkers = [];
-    const DISTANCE_THRESHOLD = 100;
-    let issueCircles = [];
 
     function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 54.4231, lng: -6.4446 },
+      var mapOptions = {
+        center: {
+          lat: 54.4231,
+          lng: -6.4446
+        },
         zoom: 12
-      });
+      };
 
+      map = new google.maps.Map(document.getElementById('map'), mapOptions);
       directionsService = new google.maps.DirectionsService();
-      geocoder = new google.maps.Geocoder();
-      loadSavedPlaces();
+      directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer.setMap(map);
 
+      geocoder = new google.maps.Geocoder();
+
+      // Fetch active issues from the server and add markers for them
       fetch('/issues/active.json')
         .then(response => response.json())
         .then(issues => {
           issues.forEach(issue => {
             const position = new google.maps.LatLng(issue.latitude, issue.longitude);
-            issuePositions.push(position);
+            issuePositions.push(position);  // Store positions of issues
 
-            const issueCircle = new google.maps.Circle({
-              center: position,
-              radius: DISTANCE_THRESHOLD,
+            // Create red markers for issues
+            const issueIcon = {
+              url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+              scaledSize: new google.maps.Size(32, 32),
+            };
+
+            const issueMarker = new google.maps.Marker({
+              position: position,
               map: map,
-              fillColor: 'rgba(255, 0, 0, 0.3)',
-              fillOpacity: 0.3,
-              strokeColor: 'red',
-              strokeOpacity: 0.8,
-              strokeWeight: 1
+              title: issue.category,
+              icon: issueIcon  // Red color for issue markers
             });
 
-            issueCircles.push(issueCircle);
-
-            geocoder.geocode({ location: position }, function(results, status) {
-              if (status === google.maps.GeocoderStatus.OK && results[0]) {
-                const address = results[0].formatted_address;
-                const marker = new google.maps.Marker({
-                  position: position,
-                  map: map,
-                  title: `Issue: ${address}`,
-                  icon: {
-                    url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                    scaledSize: new google.maps.Size(32, 32),
-                  }
-                });
-
-                issueMarkers.push(marker);
-
-                const infoWindow = new google.maps.InfoWindow({
-                  content: `<h3>${issue.category}</h3><p>${address}</p>`
-                });
-
-                marker.addListener('click', () => {
-                  infoWindow.open(map, marker);
-                });
-              }
+            // Add InfoWindow for the issue markers
+            const infoWindow = new google.maps.InfoWindow({
+              content: `<div><strong>Category:</strong> ${issue.category}<br><strong>Coordinates:</strong> ${issue.latitude}, ${issue.longitude}</div>`
             });
+
+            issueMarker.addListener('click', function () {
+              infoWindow.open(map, issueMarker);
+            });
+
+            issueMarkers.push(issueMarker);
           });
         })
-        .catch(error => console.error("Error fetching issues:", error));
+        .catch(error => console.error('Error fetching issues:', error));
 
-      map.addListener("click", (event) => {
+      // Add click event listener for map to set origin and destination
+      map.addListener('click', function (event) {
         if (!originMarker) {
           originMarker = new google.maps.Marker({
             position: event.latLng,
             map: map,
-            label: "S",
+            label: "Start",
+            title: "Origin",
             draggable: true
           });
           originPosition = event.latLng;
-          originMarker.addListener("dragend", () => {
-            originPosition = originMarker.getPosition();
-            if (destinationPosition) calculateRoutes();
-          });
         } else if (!destinationMarker) {
           destinationMarker = new google.maps.Marker({
             position: event.latLng,
             map: map,
-            label: "D",
+            label: "End",
+            title: "Destination",
             draggable: true
           });
           destinationPosition = event.latLng;
-          destinationMarker.addListener("dragend", () => {
-            destinationPosition = destinationMarker.getPosition();
-            if (originPosition) calculateRoutes();
-          });
-          calculateRoutes();
+
+          // Once both markers are set, calculate route
+          calculateRoute();
+        }
+      });
+
+      // If marker is dragged, recalculate route
+      google.maps.event.addListener(originMarker, 'dragend', function () {
+        originPosition = originMarker.getPosition();
+        if (destinationPosition) {
+          calculateRoute();
+        }
+      });
+
+      google.maps.event.addListener(destinationMarker, 'dragend', function () {
+        destinationPosition = destinationMarker.getPosition();
+        if (originPosition) {
+          calculateRoute();
         }
       });
     }
 
-    function calculateRoutes() {
-      if (!originPosition || !destinationPosition) {
-        alert("Please set both start and destination points.");
-        return;
+    function calculateRoute() {
+      if (originPosition && destinationPosition) {
+        const request = {
+          origin: originPosition,
+          destination: destinationPosition,
+          travelMode: google.maps.TravelMode.DRIVING,
+          provideRouteAlternatives: true
+        };
+
+        directionsService.route(request, function (result, status) {
+          if (status === google.maps.DirectionsStatus.OK) {
+            currentRoutes = result.routes;
+            updateRouteTable();
+            directionsRenderer.setDirections(result);
+          } else {
+            alert("Could not fetch routes. Please try again.");
+          }
+        });
       }
+    }
 
-      routePolylines.forEach(polyline => polyline.setMap(null));
-      routePolylines = [];
+    function updateRouteTable() {
+      const routeTableBody = document.getElementById("route-table-body");
+      routeTableBody.innerHTML = ''; // Clear the existing table rows
 
-      let request = {
-        origin: originPosition,
-        destination: destinationPosition,
-        travelMode: google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true
-      };
+      currentRoutes.forEach((route, index) => {
+        const row = document.createElement("tr");
+        const routeCell = document.createElement("td");
+        const distanceCell = document.createElement("td");
+        const timeCell = document.createElement("td");
 
-      directionsService.route(request, (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK) {
-          updateRouteTable(result.routes);
-          currentRoutes = result.routes;
-          setOptimalRoute(0);
-        } else {
-          alert("Could not fetch routes. Please try again.");
-        }
+        routeCell.innerText = `Route ${index + 1}`;
+        distanceCell.innerText = route.legs[0].distance.text;
+        timeCell.innerText = route.legs[0].duration.text;
+
+        row.appendChild(routeCell);
+        row.appendChild(distanceCell);
+        row.appendChild(timeCell);
+        routeTableBody.appendChild(row);
+
+        // Make the row clickable to highlight the selected route
+        row.addEventListener('click', function () {
+          currentRoutes.forEach((r, i) => {
+            if (i === index) {
+              directionsRenderer.setRouteIndex(i);
+              row.classList.add("selected-route");
+            } else {
+              row.classList.remove("selected-route");
+            }
+          });
+        });
       });
     }
 
@@ -233,10 +270,10 @@
 
       originPosition = startValue;
       destinationPosition = endValue;
-      calculateRoutes();
+      calculateRoute();
     }
 
-    google.maps.event.addDomListener(window, "load", initMap);
+    google.maps.event.addDomListener(window, 'load', initMap);
   </script>
 </body>
 
